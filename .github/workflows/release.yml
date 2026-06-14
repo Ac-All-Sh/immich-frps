@@ -27,7 +27,6 @@ jobs:
             exit 0
           fi
           
-          # 检查是否已存在此版本的 release
           RESPONSE=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/tags/v${LATEST_VERSION}")
           
           if echo "$RESPONSE" | grep -q '"tag_name"'; then
@@ -46,19 +45,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        include:
-          - arch: amd64
-            go_arch: amd64
-          - arch: arm64
-            go_arch: arm64
-          - arch: arm
-            go_arch: arm
+        arch: [amd64, arm64]
     
     steps:
       - name: Download frps binary
         run: |
           VERSION=${{ needs.check-version.outputs.version }}
-          ARCH=${{ matrix.go_arch }}
+          ARCH=${{ matrix.arch }}
           
           echo "Downloading frps v${VERSION} for ${ARCH}..."
           
@@ -73,21 +66,20 @@ jobs:
           # 添加执行权限
           chmod +x frps_linux_${ARCH} frpc_linux_${ARCH}
           
-          # 验证二进制文件
-          ./frps_linux_${ARCH} --version || true
-          ./frpc_linux_${ARCH} --version || true
-          
           # 创建校验和
           sha256sum frps_linux_${ARCH} frpc_linux_${ARCH} > checksums_${ARCH}.txt
           
-          # 上传制品
-          uses: actions/upload-artifact@v4
-          with:
-            name: binaries-${{ matrix.arch }}
-            path: |
-              frps_linux_*
-              frpc_linux_*
-              checksums_*.txt
+          echo "Downloaded successfully:"
+          ls -la frps_linux_${ARCH} frpc_linux_${ARCH}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries-${{ matrix.arch }}
+          path: |
+            frps_linux_*
+            frpc_linux_*
+            checksums_*.txt
 
   build-docker:
     needs: check-version
@@ -124,6 +116,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Download binaries for Docker build
+        run: |
+          VERSION=${{ needs.check-version.outputs.version }}
+          ARCH=${{ matrix.arch }}
+          
+          curl -fsSL -o frps.tar.gz "https://github.com/fatedier/frp/releases/download/v${VERSION}/frp_${VERSION}_linux_${ARCH}.tar.gz"
+          tar -xzf frps.tar.gz
+          
+          cp frp_${VERSION}_linux_${ARCH}/frps ./frps
+          cp frp_${VERSION}_linux_${ARCH}/frpc ./frpc
+          chmod +x ./frps ./frpc
+
       - name: Build and push frps
         uses: docker/build-push-action@v5
         with:
@@ -132,10 +136,10 @@ jobs:
           platforms: ${{ matrix.platform }}
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/frps:${{ needs.check-version.outputs.version }}-${{ matrix.arch }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/frps:latest-${{ matrix.arch }}
-            ghcr.io/${{ github.repository_owner }}/frps:${{ needs.check-version.outputs.version }}-${{ matrix.arch }}
-            ghcr.io/${{ github.repository_owner }}/frps:latest-${{ matrix.arch }}
+            acallsh/frps:${{ needs.check-version.outputs.version }}-${{ matrix.arch }}
+            acallsh/frps:latest-${{ matrix.arch }}
+            ghcr.io/ac-all-sh/frps:${{ needs.check-version.outputs.version }}-${{ matrix.arch }}
+            ghcr.io/ac-all-sh/frps:latest-${{ matrix.arch }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -147,15 +151,15 @@ jobs:
           platforms: ${{ matrix.platform }}
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/frpc:${{ needs.check-version.outputs.version }}-${{ matrix.arch }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/frpc:latest-${{ matrix.arch }}
-            ghcr.io/${{ github.repository_owner }}/frpc:${{ needs.check-version.outputs.version }}-${{ matrix.arch }}
-            ghcr.io/${{ github.repository_owner }}/frpc:latest-${{ matrix.arch }}
+            acallsh/frpc:${{ needs.check-version.outputs.version }}-${{ matrix.arch }}
+            acallsh/frpc:latest-${{ matrix.arch }}
+            ghcr.io/ac-all-sh/frpc:${{ needs.check-version.outputs.version }}-${{ matrix.arch }}
+            ghcr.io/ac-all-sh/frpc:latest-${{ matrix.arch }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
   create-release:
-    needs: [check-version, download-binaries, build-docker]
+    needs: [check-version, download-binaries]
     if: needs.check-version.outputs.should_build == 'true'
     runs-on: ubuntu-latest
     permissions:
@@ -171,6 +175,10 @@ jobs:
         with:
           path: artifacts
 
+      - name: List artifacts
+        run: |
+          find artifacts -type f | head -20
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
@@ -185,18 +193,17 @@ jobs:
             |-------------|------|------|-----------|
             | amd64 | [frps_linux_amd64](https://github.com/${{ github.repository }}/releases/download/v${{ needs.check-version.outputs.version }}/frps_linux_amd64) | [frpc_linux_amd64](https://github.com/${{ github.repository }}/releases/download/v${{ needs.check-version.outputs.version }}/frpc_linux_amd64) | [checksums_amd64.txt](https://github.com/${{ github.repository }}/releases/download/v${{ needs.check-version.outputs.version }}/checksums_amd64.txt) |
             | arm64 | [frps_linux_arm64](https://github.com/${{ github.repository }}/releases/download/v${{ needs.check-version.outputs.version }}/frps_linux_arm64) | [frpc_linux_arm64](https://github.com/${{ github.repository }}/releases/download/v${{ needs.check-version.outputs.version }}/frpc_linux_arm64) | [checksums_arm64.txt](https://github.com/${{ github.repository }}/releases/download/v${{ needs.check-version.outputs.version }}/checksums_arm64.txt) |
-            | arm | [frps_linux_arm](https://github.com/${{ github.repository }}/releases/download/v${{ needs.check-version.outputs.version }}/frps_linux_arm) | [frpc_linux_arm](https://github.com/${{ github.repository }}/releases/download/v${{ needs.check-version.outputs.version }}/frpc_linux_arm) | [checksums_arm.txt](https://github.com/${{ github.repository }}/releases/download/v${{ needs.check-version.outputs.version }}/checksums_arm.txt) |
             
             ### Docker Images
             
             ```bash
             # Docker Hub
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/frps:${{ needs.check-version.outputs.version }}-amd64
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/frpc:${{ needs.check-version.outputs.version }}-amd64
+            docker pull acallsh/frps:${{ needs.check-version.outputs.version }}-amd64
+            docker pull acallsh/frpc:${{ needs.check-version.outputs.version }}-amd64
             
             # GitHub Container Registry
-            docker pull ghcr.io/${{ github.repository_owner }}/frps:${{ needs.check-version.outputs.version }}-amd64
-            docker pull ghcr.io/${{ github.repository_owner }}/frpc:${{ needs.check-version.outputs.version }}-amd64
+            docker pull ghcr.io/ac-all-sh/frps:${{ needs.check-version.outputs.version }}-amd64
+            docker pull ghcr.io/ac-all-sh/frpc:${{ needs.check-version.outputs.version }}-amd64
             ```
             
             ### Quick Start
@@ -217,7 +224,6 @@ jobs:
           files: |
             artifacts/binaries-amd64/*
             artifacts/binaries-arm64/*
-            artifacts/binaries-arm/*
           draft: false
           prerelease: false
         env:
@@ -225,7 +231,7 @@ jobs:
 
       - name: Cleanup old releases
         run: |
-          # 保留最近 10 个版本
+          set +e
           releases=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases?per_page=100" | grep '"tag_name"' | sed -E 's/.*"v([^"]+)".*/\1/' | tail -n +11)
           for version in $releases; do
             echo "Deleting release v${version}..."
