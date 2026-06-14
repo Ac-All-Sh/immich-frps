@@ -7,8 +7,49 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/Ac-All-Sh/immich-frps.svg)](https://github.com/Ac-All-Sh/immich-frps/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/Ac-All-Sh/immich-frps.svg)](https://github.com/Ac-All-Sh/immich-frps/issues)
+![GitHub forks](https://img.shields.io/github/forks/Ac-All-Sh/immich-frps.svg)
+![GitHub last commit](https://img.shields.io/github/last-commit/Ac-All-Sh/immich-frps.svg)
 
 **[English](#english) | [中文](#chinese) | [한국어](#korean) | [日本語](#japanese)**
+
+</div>
+
+---
+
+## 📊 用户统计
+
+<div align="center">
+
+![Star History Chart](https://api.star-history.com/svg?repos=Ac-All-Sh/immich-frps&type=Date)
+
+</div>
+
+<div align="center">
+
+![GitHub Stats](https://github-readme-stats.vercel.app/api?username=Ac-All-Sh&show_icons=true&theme=radical&hide_border=false)
+
+</div>
+
+<div align="center">
+
+![Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=Ac-All-Sh&layout=compact&theme=radical)
+
+</div>
+
+---
+
+## 📞 联系方式
+
+<div align="center">
+
+| 平台 | 联系方式 |
+|------|----------|
+| **微信** | **@attychen** |
+| **GitHub** | [Ac-All-Sh](https://github.com/Ac-All-Sh) |
+
+> 💡 扫描下方二维码添加微信
+
+![WeChat](https://img.shields.io/badge/微信-@attychen-07C160?style=for-the-badge&logo=wechat&logoColor=white)
 
 </div>
 
