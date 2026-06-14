@@ -314,11 +314,13 @@ rm -f /etc/systemd/system/frps.service
 
 ### Releases and Artifacts
 
-This repository automatically checks for new frp releases every week and generates:
+This repository automatically checks for new frp releases **every day**. When a new version is detected:
 
 - **Binary Files**: frps and frpc for amd64, arm64, arm architectures
-- **Docker Images**: Available on Docker Hub and GitHub Container Registry
+- **Docker Images**: Available on Docker Hub
 - **Checksums**: SHA256 verification for all binaries
+
+The workflow will only run the build process when a new version is found. If no new version exists, the workflow will skip all build steps.
 
 #### Download Binaries
 
@@ -651,11 +653,13 @@ rm -f /etc/systemd/system/frps.service
 
 ### 发布与制品
 
-本仓库每周自动检查 frp 新版本并生成：
+本仓库**每天**自动检查 frp 新版本。当检测到新版本时：
 
 - **二进制文件**: frps 和 frpc (amd64/arm64/arm)
-- **Docker 镜像**: Docker Hub 和 GitHub Container Registry
+- **Docker 镜像**: Docker Hub
 - **校验和**: 所有二进制文件的 SHA256 验证
+
+工作流只有在检测到新版本时才会执行构建过程。如果没有新版本，所有构建步骤将被跳过。
 
 #### 下载二进制文件
 
@@ -989,11 +993,13 @@ rm -f /etc/systemd/system/frps.service
 
 ### リリースとアーティファクト
 
-このリポジトリは毎週自動的にfrpの新しいリリースをチェックし、以下を生成します:
+このリポジトリは**毎日**自動的にfrpの新しいリリースをチェックします。新しいバージョンが検出されると:
 
 - **バイナリファイル**: frpsとfrpc (amd64/arm64/arm)
-- **Dockerイメージ**: Docker HubとGitHub Container Registryで利用可能
+- **Dockerイメージ**: Docker Hubで利用可能
 - **チェックサム**: すべてのバイナリファイルのSHA256検証
+
+新しいバージョンが見つかった場合のみビルドプロセスが実行されます。新しいバージョンがない場合、すべてのビルドステップはスキップされます。
 
 #### バイナリファイルをダウンロード
 
@@ -1327,11 +1333,13 @@ rm -f /etc/systemd/system/frps.service
 
 ### 릴리스 및 아티팩트
 
-이 리포지토리는 매주 자동으로 frp의 새 릴리스를 확인하고 다음을 생성합니다:
+이 리포지토리는 **매일** 자동으로 frp의 새 릴리스를 확인합니다. 새 버전이 감지되면:
 
 - **바이너리 파일**: frps와 frpc (amd64/arm64/arm)
-- **Docker 이미지**: Docker Hub와 GitHub Container Registry에서 사용 가능
+- **Docker 이미지**: Docker Hub에서 사용 가능
 - **체크섬**: 모든 바이너리 파일의 SHA256 검증
+
+새 버전이 발견된 경우에만 빌드 프로세스가 실행됩니다. 새 버전이 없으면 모든 빌드 단계가 건너뜁니다.
 
 #### 바이너리 파일 다운로드
 
