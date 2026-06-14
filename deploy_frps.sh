@@ -24,7 +24,7 @@ DEFAULT_BIND_PORT=7000
 DEFAULT_DASHBOARD_PORT=7500
 DEFAULT_DASHBOARD_USER="admin"
 DEFAULT_DASHBOARD_PASS="admin123"
-DEFAULT_AUTH_TOKEN="your_frp_token_here"
+DEFAULT_AUTH_TOKEN="immich_secure_token_2026"
 DEFAULT_VHOST_HTTP_PORT=8080
 DEFAULT_VHOST_HTTPS_PORT=8443
 
@@ -508,21 +508,33 @@ menu_main() {
     echo -e "  ${BOLD}[5]${NC} ${BLUE}生成 frpc 配置${NC}"
     echo -e "      生成客户端配置文件, 支持所有协议"
     echo ""
-    echo -e "  ${BOLD}[6]${NC} ${RED}卸载 frps${NC}"
+    echo -e "  ${BOLD}[6]${NC} ${GREEN}配置备份/恢复${NC}"
+    echo -e "      导出或导入 frps 配置"
+    echo ""
+    echo -e "  ${BOLD}[7]${NC} ${CYAN}多服务器管理${NC}"
+    echo -e "      管理多个 frps 服务器实例"
+    echo ""
+    echo -e "  ${BOLD}[8]${NC} ${YELLOW}监控面板${NC}"
+    echo -e "      查看连接数、流量等统计信息"
+    echo ""
+    echo -e "  ${BOLD}[9]${NC} ${RED}卸载 frps${NC}"
     echo -e "      清除所有 frps 相关配置"
     echo ""
     echo -e "  ${BOLD}[0]${NC} 退出脚本"
     echo ""
     print_line
 
-    read -p "  请选择 [0-6]: " choice
+    read -p "  请选择 [0-9]: " choice
     case $choice in
         1) menu_deploy ;;
         2) menu_config ;;
         3) menu_show_config ;;
         4) menu_service ;;
         5) menu_generate_frpc ;;
-        6) menu_uninstall ;;
+        6) menu_backup_restore ;;
+        7) menu_multi_server ;;
+        8) menu_monitor ;;
+        9) menu_uninstall ;;
         0) echo ""; info "退出脚本"; exit 0 ;;
         *) menu_main ;;
     esac
@@ -1311,6 +1323,448 @@ do_deploy() {
     echo ""
     read -p "  按回车返回主菜单..."
     menu_main
+}
+
+# ===================== 菜单: 配置备份/恢复 =====================
+menu_backup_restore() {
+    clear_screen
+    title "  配置备份/恢复"
+    print_line
+    echo ""
+    echo -e "  ${BOLD}[1]${NC} ${GREEN}备份配置${NC}"
+    echo -e "      导出当前 frps 配置到文件"
+    echo ""
+    echo -e "  ${BOLD}[2]${NC} ${YELLOW}恢复配置${NC}"
+    echo -e "      从文件导入 frps 配置"
+    echo ""
+    echo -e "  ${BOLD}[3]${NC} ${CYAN}查看备份列表${NC}"
+    echo -e "      查看所有可用的备份文件"
+    echo ""
+    echo -e "  ${BOLD}[0]${NC} 返回主菜单"
+    echo ""
+    print_line
+
+    read -p "  请选择 [0-3]: " choice
+    case $choice in
+        1) do_backup ;;
+        2) do_restore ;;
+        3) list_backups ;;
+        0) menu_main ;;
+        *) menu_backup_restore ;;
+    esac
+}
+
+# 执行备份
+do_backup() {
+    clear_screen
+    title "  备份 frps 配置"
+    print_line
+    
+    local backup_dir="/root/frps_backups"
+    mkdir -p "$backup_dir"
+    
+    local timestamp=$(date +%Y%m%d_%H%M%S)
+    local backup_file="$backup_dir/frps_backup_${timestamp}.tar.gz"
+    
+    info "正在备份配置..."
+    
+    # 备份配置文件
+    tar -czf "$backup_file" \
+        -C / \
+        etc/frp \
+        etc/systemd/system/frps.service \
+        etc/sysctl.d/99-frps-optimize.conf \
+        2>/dev/null || true
+    
+    if [ -f "$backup_file" ]; then
+        local size=$(du -h "$backup_file" | cut -f1)
+        info "备份完成!"
+        echo ""
+        echo "  备份文件: ${GREEN}$backup_file${NC}"
+        echo "  文件大小: ${GREEN}$size${NC}"
+        echo ""
+        echo "  恢复命令: bash $0"
+        echo "  然后选择 [6] → [2] → 输入备份文件路径"
+    else
+        error "备份失败"
+    fi
+    
+    echo ""
+    read -p "  按回车返回..."
+    menu_backup_restore
+}
+
+# 执行恢复
+do_restore() {
+    clear_screen
+    title "  恢复 frps 配置"
+    print_line
+    
+    local backup_dir="/root/frps_backups"
+    
+    if [ ! -d "$backup_dir" ] || [ -z "$(ls -A "$backup_dir" 2>/dev/null)" ]; then
+        warn "没有找到备份文件"
+        echo ""
+        read -p "  按回车返回..."
+        menu_backup_restore
+        return
+    fi
+    
+    echo "  可用的备份文件:"
+    echo ""
+    ls -lt "$backup_dir"/*.tar.gz 2>/dev/null | head -10 | while read line; do
+        echo "  $line"
+    done
+    echo ""
+    
+    read -p "  输入备份文件路径: " backup_file
+    
+    if [ ! -f "$backup_file" ]; then
+        error "备份文件不存在: $backup_file"
+    fi
+    
+    warn "即将恢复配置，这将覆盖当前配置!"
+    read -p "  确认恢复? [y/N]: " confirm
+    
+    if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+        info "正在恢复配置..."
+        
+        # 停止服务
+        systemctl stop frps 2>/dev/null || true
+        
+        # 恢复文件
+        tar -xzf "$backup_file" -C / 2>/dev/null || true
+        
+        # 重新加载并启动
+        systemctl daemon-reload
+        systemctl start frps
+        
+        sleep 2
+        
+        if systemctl is-active --quiet frps; then
+            info "配置恢复成功!"
+        else
+            warn "配置恢复后服务启动失败，请检查配置"
+        fi
+    else
+        info "已取消恢复"
+    fi
+    
+    echo ""
+    read -p "  按回车返回..."
+    menu_backup_restore
+}
+
+# 列出备份
+list_backups() {
+    clear_screen
+    title "  备份列表"
+    print_line
+    
+    local backup_dir="/root/frps_backups"
+    
+    if [ ! -d "$backup_dir" ] || [ -z "$(ls -A "$backup_dir" 2>/dev/null)" ]; then
+        warn "没有找到备份文件"
+    else
+        echo ""
+        ls -lt "$backup_dir"/*.tar.gz 2>/dev/null | head -20
+    fi
+    
+    echo ""
+    read -p "  按回车返回..."
+    menu_backup_restore
+}
+
+# ===================== 菜单: 多服务器管理 =====================
+menu_multi_server() {
+    clear_screen
+    title "  多服务器管理"
+    print_line
+    echo ""
+    echo "  当前服务器: $(hostname) ($(curl -s4 ifconfig.me 2>/dev/null || echo 'N/A'))"
+    echo ""
+    print_line
+    echo ""
+    echo -e "  ${BOLD}[1]${NC} ${GREEN}添加服务器${NC}"
+    echo -e "      添加新的 frps 服务器到管理列表"
+    echo ""
+    echo -e "  ${BOLD}[2]${NC} ${YELLOW}查看服务器列表${NC}"
+    echo -e "      查看所有已添加的服务器"
+    echo ""
+    echo -e "  ${BOLD}[3]${NC} ${CYAN}远程管理${NC}"
+    echo -e "      远程管理其他服务器的 frps"
+    echo ""
+    echo -e "  ${BOLD}[4]${NC} ${RED}删除服务器${NC}"
+    echo -e "      从管理列表中删除服务器"
+    echo ""
+    echo -e "  ${BOLD}[0]${NC} 返回主菜单"
+    echo ""
+    print_line
+
+    read -p "  请选择 [0-4]: " choice
+    case $choice in
+        1) add_server ;;
+        2) list_servers ;;
+        3) remote_manage ;;
+        4) remove_server ;;
+        0) menu_main ;;
+        *) menu_multi_server ;;
+    esac
+}
+
+# 添加服务器
+add_server() {
+    clear_screen
+    title "  添加服务器"
+    print_line
+    
+    read -p "  服务器名称: " server_name
+    read -p "  服务器 IP: " server_ip
+    read -p "  SSH 端口 (默认 22): " ssh_port
+    ssh_port=${ssh_port:-22}
+    read -p "  SSH 用户 (默认 root): " ssh_user
+    ssh_user=${ssh_user:-root}
+    
+    # 保存到配置文件
+    local servers_file="/root/.frps_servers"
+    echo "$server_name|$server_ip|$ssh_port|$ssh_user" >> "$servers_file"
+    
+    info "服务器添加成功!"
+    echo ""
+    echo "  名称: $server_name"
+    echo "  IP:   $server_ip"
+    echo "  SSH:  $ssh_user@$server_ip:$ssh_port"
+    
+    echo ""
+    read -p "  按回车返回..."
+    menu_multi_server
+}
+
+# 列出服务器
+list_servers() {
+    clear_screen
+    title "  服务器列表"
+    print_line
+    
+    local servers_file="/root/.frps_servers"
+    
+    if [ ! -f "$servers_file" ] || [ ! -s "$servers_file" ]; then
+        warn "没有添加任何服务器"
+    else
+        echo ""
+        echo "  已添加的服务器:"
+        echo ""
+        local i=1
+        while IFS='|' read -r name ip port user; do
+            echo "  [$i] $name"
+            echo "      IP: $ip"
+            echo "      SSH: $user@$ip:$port"
+            echo ""
+            i=$((i + 1))
+        done < "$servers_file"
+    fi
+    
+    echo ""
+    read -p "  按回车返回..."
+    menu_multi_server
+}
+
+# 远程管理
+remote_manage() {
+    clear_screen
+    title "  远程管理"
+    print_line
+    
+    local servers_file="/root/.frps_servers"
+    
+    if [ ! -f "$servers_file" ] || [ ! -s "$servers_file" ]; then
+        warn "没有添加任何服务器"
+        echo ""
+        read -p "  按回车返回..."
+        menu_multi_server
+        return
+    fi
+    
+    echo "  选择要管理的服务器:"
+    echo ""
+    local i=1
+    while IFS='|' read -r name ip port user; do
+        echo "  [$i] $name ($ip)"
+        i=$((i + 1))
+    done < "$servers_file"
+    echo ""
+    
+    read -p "  服务器编号: " server_num
+    
+    if [ -z "$server_num" ] || [ "$server_num" -lt 1 ] || [ "$server_num" -gt $((i - 1)) ]; then
+        error "无效的服务器编号"
+    fi
+    
+    local server_info=$(sed -n "${server_num}p" "$servers_file")
+    IFS='|' read -r name ip port user <<< "$server_info"
+    
+    info "连接到 $name ($ip)..."
+    echo ""
+    echo "  可用命令:"
+    echo "  1. 查看状态: ssh $user@$ip 'systemctl status frps'"
+    echo "  2. 查看日志: ssh $user@$ip 'journalctl -u frps -f'"
+    echo "  3. 重启服务: ssh $user@$ip 'systemctl restart frps'"
+    echo "  4. 查看配置: ssh $user@$ip 'cat /etc/frp/frps.toml'"
+    echo ""
+    
+    read -p "  输入 SSH 命令 (或按回车返回): " ssh_cmd
+    
+    if [ -n "$ssh_cmd" ]; then
+        ssh -p "$port" "$user@$ip" "$ssh_cmd"
+    fi
+    
+    echo ""
+    read -p "  按回车返回..."
+    menu_multi_server
+}
+
+# 删除服务器
+remove_server() {
+    clear_screen
+    title "  删除服务器"
+    print_line
+    
+    local servers_file="/root/.frps_servers"
+    
+    if [ ! -f "$servers_file" ] || [ ! -s "$servers_file" ]; then
+        warn "没有添加任何服务器"
+        echo ""
+        read -p "  按回车返回..."
+        menu_multi_server
+        return
+    fi
+    
+    echo "  选择要删除的服务器:"
+    echo ""
+    local i=1
+    while IFS='|' read -r name ip port user; do
+        echo "  [$i] $name ($ip)"
+        i=$((i + 1))
+    done < "$servers_file"
+    echo ""
+    
+    read -p "  服务器编号: " server_num
+    
+    if [ -z "$server_num" ] || [ "$server_num" -lt 1 ] || [ "$server_num" -gt $((i - 1)) ]; then
+        error "无效的服务器编号"
+    fi
+    
+    local server_info=$(sed -n "${server_num}p" "$servers_file")
+    IFS='|' read -r name ip port user <<< "$server_info"
+    
+    warn "即将删除服务器: $name ($ip)"
+    read -p "  确认删除? [y/N]: " confirm
+    
+    if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+        sed -i "${server_num}d" "$servers_file"
+        info "服务器已删除"
+    else
+        info "已取消删除"
+    fi
+    
+    echo ""
+    read -p "  按回车返回..."
+    menu_multi_server
+}
+
+# ===================== 菜单: 监控面板 =====================
+menu_monitor() {
+    clear_screen
+    title "  frps 监控面板"
+    print_line
+    
+    # 检查 frps 是否运行
+    if ! systemctl is-active --quiet frps 2>/dev/null; then
+        warn "frps 服务未运行"
+        echo ""
+        read -p "  按回车返回..."
+        menu_main
+        return
+    fi
+    
+    echo ""
+    echo "  [服务状态]"
+    echo "  状态: ${GREEN}运行中${NC}"
+    echo "  PID:  $(pgrep -x frps || echo 'N/A')"
+    echo "  内存: $(ps -o rss= -p $(pgrep -x frps) 2>/dev/null | awk '{printf "%.2f MB", $1/1024}' || echo 'N/A')"
+    echo "  CPU:  $(ps -o %cpu= -p $(pgrep -x frps) 2>/dev/null || echo 'N/A')%"
+    echo ""
+    
+    echo "  [网络连接]"
+    echo "  当前连接数: $(ss -s 2>/dev/null | grep -oP 'tcp \s+\K\d+' || echo 'N/A')"
+    echo "  TIME_WAIT:  $(ss -s 2>/dev/null | grep -oP 'timewait \s+\K\d+' || echo 'N/A')"
+    echo ""
+    
+    echo "  [端口监听]"
+    ss -tlnp 2>/dev/null | grep -E ":(7000|7500|8080|8443)" || echo "  未检测到 frps 端口"
+    echo ""
+    
+    echo "  [系统资源]"
+    echo "  内存使用: $(free -h | awk '/^Mem:/ {printf "%s / %s (%.1f%%)", $3, $2, $3/$2*100}')"
+    echo "  CPU 使用: $(top -bn1 | grep "Cpu(s)" | awk '{print $2}')%"
+    echo "  磁盘使用: $(df -h / | awk 'NR==2 {printf "%s / %s (%s)", $3, $2, $5}')"
+    echo ""
+    
+    echo "  [最近日志]"
+    journalctl -u frps -n 5 --no-pager 2>/dev/null | tail -5 | while read line; do
+        echo "  $line"
+    done
+    echo ""
+    
+    print_line
+    echo ""
+    echo "  ${BOLD}[1]${NC} 刷新状态"
+    echo "  ${BOLD}[2]${NC} 查看完整日志"
+    echo "  ${BOLD}[3]${NC} 查看连接详情"
+    echo "  ${BOLD}[0]${NC} 返回主菜单"
+    echo ""
+    print_line
+    
+    read -p "  请选择 [0-3]: " choice
+    case $choice in
+        1) menu_monitor ;;
+        2) view_logs ;;
+        3) view_connections ;;
+        0) menu_main ;;
+        *) menu_monitor ;;
+    esac
+}
+
+# 查看日志
+view_logs() {
+    clear_screen
+    title "  frps 日志"
+    print_line
+    echo ""
+    journalctl -u frps -n 50 --no-pager 2>/dev/null
+    echo ""
+    print_line
+    echo ""
+    read -p "  按回车返回..."
+    menu_monitor
+}
+
+# 查看连接详情
+view_connections() {
+    clear_screen
+    title "  连接详情"
+    print_line
+    echo ""
+    echo "  [TCP 连接]"
+    ss -tnp 2>/dev/null | grep -E ":(7000|7500|8080|8443)" | head -20 || echo "  无连接"
+    echo ""
+    echo "  [连接统计]"
+    ss -s 2>/dev/null | head -10
+    echo ""
+    print_line
+    echo ""
+    read -p "  按回车返回..."
+    menu_monitor
 }
 
 # ===================== 帮助信息 =====================
