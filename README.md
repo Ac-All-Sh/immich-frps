@@ -8,7 +8,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/Ac-All-Sh/immich-frps.svg)](https://github.com/Ac-All-Sh/immich-frps/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/Ac-All-Sh/immich-frps.svg)](https://github.com/Ac-All-Sh/immich-frps/issues)
 
-**[使用文档](doc.html)**
+**[使用文档](https://ac-all-sh.github.io/immich-frps/doc.html)**
 
 </div>
 
