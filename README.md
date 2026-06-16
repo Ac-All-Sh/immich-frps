@@ -1,149 +1,183 @@
 <div align="center">
-  <img src="./static/images/logo.ico" alt="logo"/>
-  <h1 align="center">go-frp-panel</h1>
+
+# immich-frps · frps-panel
+
+**frp 内网穿透可视化管理面板 — 监控 · 优化 · 带宽管理 · 防火墙**
+
+[![GitHub release](https://img.shields.io/github/v/release/attychen/immich-frps?include_prereleases)](https://github.com/attychen/immich-frps/releases)
+[![GitHub downloads](https://img.shields.io/github/downloads/attychen/immich-frps/total)](https://github.com/attychen/immich-frps/releases)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Build](https://img.shields.io/github/actions/workflow/status/attychen/immich-frps/release.yml?branch=frps-panel)](https://github.com/attychen/immich-frps/actions)
+
 </div>
-<div align="center">基于Frp开源代码打造的自定义配置管理📺、无需配置文件、自定义配置、在线自动升级、frpc多客户端运行管理，免去了配置文件的复杂操作，可实现『✨秒妙极安装体验🚀』</div>
-<br>
-<p align="center">
-  <a href="https://github.com/xxl6[pkg](pkg)097/go-frp-panel/releases/latest">
-    <img src="https://img.shields.io/github/v/release/xxl6097/go-frp-panel" />
-  </a>
-  <a href="https://github.com/xxl6097/go-frp-panel/releases/latest">
-    <img src="https://img.shields.io/github/downloads/xxl6097/go-frp-panel/total" />
-  </a>
-  <a href="https://github.com/xxl6097/go-frp-panel/fork">
-    <img src="https://img.shields.io/github/forks/xxl6097/go-frp-panel" />
-  </a>
-</p>
 
+---
 
-- [✅ 特点](#特点)
-- [⚙️ 配置参数](#配置)
-- [🚀 快速上手](#快速上手)
-    - [Frps安装](#Frps服务端程序安装)
-    - [Frpc客户端程序安装](#Frpc客户端程序安装)
-    - [服务端界面](#frps主界面)
-    - [客户端界面](#frpc主界面)
-- [❤️ 赞赏](#赞赏)
-- [👀 关注(更新订阅+答疑交流)](#关注)
-- [📣 免责声明](#免责声明)
-- [⚖️ 许可证](#许可证)
+## 📋 项目简介
 
-📍订阅源来自：
+`frps-panel` 是基于 [fatedier/frp](https://github.com/fatedier/frp) 和 [xxl6097/go-frp-panel](https://github.com/xxl6097/go-frp-panel) 二次开发的 **frp 可视化管理面板**，专为大文件传输（如 Immich 照片同步）深度优化。
 
-- [fatedier/frp](https://github.com/fatedier/frp)
-## 特点
+提供 **frps 服务端** 和 **frpc 客户端** 的 Web 管理界面，支持多架构（Linux / Windows / macOS / FreeBSD / Android / 龙芯 / RISC-V），免配置文件，一键安装。
 
-- ✅ 程序以服务形式安装并运行，支持跨平台windows、linux、macos平台；
-- ✅ 新增重启功能，用户可管理后台操作重启；
-- ✅ 新增在线升级功能，可上传式升级和文件url式升级；
-- ✅ 新增可在管理后台端查看日志功能；
-- ✅ frps服务端可生成frpc客户端，密钥信息二进制内嵌在客户端程序中；
-- ✅ 新增用户配置，可以配置授权用户供frpc端使用
-- ✅ frpc客户端可运行多客户端
-- ✨ 新增frpc用户配置导入导出
+---
 
+## ✨ 功能特性
 
-## 快速上手
+### 🖥️ 核心功能
+| 功能 | 说明 |
+|------|------|
+| 📊 **监控仪表盘** | 实时流量、连接数、CPU / 内存监控 |
+| ⚡ **智能优化引擎** | 根据服务器配置自动计算最优 TCP 参数，5 级传输场景（1GB ~ 100GB） |
+| 📡 **带宽管理器** | 全局 / 客户端限速、流量统计、每日配额 |
+| 🛡️ **防火墙** | IP 黑白名单，可视化规则管理 |
+| 🔧 **在线配置** | 无需配置文件，Web 界面完成所有配置 |
+| 📋 **诊断工具** | 端口检测、网络诊断、性能分析 |
+| 🌐 **国际化** | 中文 / English 切换 |
 
-### Frps服务端程序安装
+### 🚀 平台能力
+| 功能 | 说明 |
+|------|------|
+| ✅ 跨平台 | Linux / Windows / macOS / FreeBSD / Android / 龙芯 / RISC-V / MIPS |
+| ✅ 服务形式运行 | 支持 install / uninstall / start / stop / restart |
+| ✅ 在线升级 | URL 升级 + 文件上传升级 |
+| ✅ 多客户端 | frpc 可同时运行多个客户端配置 |
+| ✅ 密钥内嵌 | 生成的 frpc 客户端二进制内嵌授权密钥 |
+| ✅ 配置导入导出 | 用户配置一键备份恢复 |
 
+---
 
-#### 命令行
+## 🚀 快速上手
 
-```shell
-root@clife-fnos:~/files# chmod +x acfrps_0.5.44_linux_amd64 
-root@clife-fnos:~/files# ./acfrps_0.5.44_linux_amd64 install
+### 方式一：Docker 部署（推荐）
 
-请输入Frps服务器绑定端口：6000
-请输入管理后台端口：7200
-请输入管理后台地址(默认0.0.0.0)：
-请输入管理后台用户名(admin)：admin
-请输入管理后台密码：xxxxx
+```bash
+# 拉取镜像（自动适配 amd64 / arm64 / armv7）
+docker pull attychen/frps-panel:latest
+
+# 运行 frps 面板
+docker run -d --name frps-panel --network host \
+  -v /etc/frp:/etc/frp \
+  -v /var/log/frp:/var/log/frp \
+  attychen/frps-panel:latest
 ```
 
-#### frps主界面：
+### 方式二：二进制安装
 
-<div align="center">
-  <img src="./static/images/panel.png" alt="panel"/>
-</div>
+从 [Releases](https://github.com/attychen/immich-frps/releases) 下载对应架构的二进制文件：
 
-升级界面：
-<div align="center">
-  <img src="./static/images/upgrade.png" alt="upgrade"/>
-</div>
-
-配置界面：
-<div align="center">
-  <img src="./static/images/config.png" alt="config"/>
-</div>
-
-用户界面：
-<div align="center">
-  <img src="./static/images/user.png" alt="user"/>
-</div>
-
-### Frpc客户端程序安装
-
-首先在服务器端新增账户，然后生成客户端（需先在frps端上传客户端），如下图：
-生成客户端界面：
-<div align="center">
-  <img src="./static/images/gencls.png" alt="gencls"/>
-</div>
-
-如上如，生成客户端后，上传到电脑端运行，命令如下：
-
-```shell
-root@clife-fnos:~/files# chmod +x acfrpc_0.5.48_linux_amd64 
-root@clife-fnos:~/files# ./acfrpc_0.5.48_linux_amd64 install
-App Name:       acfrpc
-App Version:    0.5.48
-Build version:  v0.5.48
-Build time:     2025-02-27 Thursday 17:21:35
-Git revision:   059ac51
-Git branch:     tags/v0.5.47^0
-Golang Version: go version go1.23.2 darwin/arm64
-DisplayName:    AcFrpc网络代理程序_v0.5.48
-Description:    一款基于GO语言的网络代理服务程序
-
-请输入管理后台端口：6400
-请输入管理后台用户名：admin
-请输入管理后台密码：xxxxxxx
+```bash
+# 以 Linux amd64 为例
+wget https://github.com/attychen/immich-frps/releases/latest/download/acfrps_v0.69.1_attychen_linux_amd64
+chmod +x acfrps_v0.69.1_attychen_linux_amd64
+./acfrps_v0.69.1_attychen_linux_amd64 install
 ```
 
-##### frpc主界面：
+按提示输入端口、用户名、密码即可完成安装。
+
+---
+
+## 📸 界面预览
+
+### frps 服务端面板
 
 <div align="center">
-  <img src="./static/images/frpc-panel.png" alt="frpc-panel"/>
+  <img src="./static/images/panel.png" alt="frps 面板主页" width="80%"/>
+  <p><em>frps 管理面板主页</em></p>
 </div>
 
-frpc创建多客户端：
+### 在线升级
 
 <div align="center">
-  <img src="./static/images/create-frpc.png" alt="create-panel"/>
+  <img src="./static/images/upgrade.png" alt="在线升级" width="80%"/>
+  <p><em>支持 URL 和文件上传两种升级方式</em></p>
 </div>
 
+### 配置管理
 
-## 依赖库
+<div align="center">
+  <img src="./static/images/config.png" alt="在线配置" width="80%"/>
+  <p><em>Web 界面完成所有 frp 配置</em></p>
+</div>
 
-```shell
-go get -u github.com/xxl6097/go-service@v0.6.39
-go get -u github.com/xxl6097/glog@v0.1.35
+### 客户端生成
+
+<div align="center">
+  <img src="./static/images/gencls.png" alt="生成客户端" width="80%"/>
+  <p><em>一键生成内嵌密钥的 frpc 客户端</em></p>
+</div>
+
+### frpc 客户端面板
+
+<div align="center">
+  <img src="./static/images/frpc-panel.png" alt="frpc 面板" width="80%"/>
+</div>
+
+---
+
+## 📂 项目结构
+
 ```
-## 赞赏
+frps-panel/
+├── cmd/
+│   ├── frps/          # frps 服务端入口
+│   ├── frpc/          # frpc 客户端入口
+│   └── server/        # 面板服务入口
+├── internal/
+│   ├── frps/          # frps 核心逻辑
+│   │   ├── api.go              # 主结构体 & 路由
+│   │   ├── bandwidth.go        # 带宽控制器
+│   │   ├── diagnostic_api.go   # 诊断 API
+│   │   ├── firewall.go         # 防火墙
+│   │   └── optimize_api.go     # 优化 API + 带宽 API
+│   └── frpc/          # frpc 客户端逻辑
+├── pkg/
+│   ├── diagnostic/    # 诊断工具包
+│   ├── optimizer/     # 智能优化引擎
+│   ├── comm/          # 通用工具
+│   └── utils/         # 工具函数
+├── web/frps/src/      # Vue 3 前端
+│   └── components/
+│       ├── MonitorDashboard.vue  # 监控仪表盘
+│       ├── OptimizePanel.vue     # 优化面板
+│       ├── BandwidthManager.vue  # 带宽管理
+│       ├── ServerConfigNew.vue   # 服务配置
+│       └── HelpDoc.vue           # 帮助文档
+├── Dockerfile         # 多架构 Docker 构建
+└── .github/workflows/ # CI/CD 自动构建 16 架构
+```
 
-<div>开发维护不易，请我喝杯咖啡☕️吧~</div>
+---
 
-| 支付宝                                  | 微信                                     |
-|--------------------------------------|----------------------------------------|
-| ![支付宝扫码](./static/images/alipay.png) | ![微信扫码](./static/images/wepay.png) |
+## 🔧 管理面板 API
 
-## 关注
+| 端点 | 方法 | 说明 |
+|------|------|------|
+| `/api/optimize/profile` | GET | 系统信息 + 优化推荐 |
+| `/api/optimize/sysctl` | GET | 生成 sysctl 配置 |
+| `/api/optimize/apply` | POST | 应用优化 |
+| `/api/optimize/rollback` | POST | 回滚优化 |
+| `/api/bandwidth/global` | GET/POST | 全局带宽限制 |
+| `/api/bandwidth/stats` | GET | 带宽统计 |
+| `/api/bandwidth/client` | GET/POST | 客户端带宽限制 |
+| `/api/firewall/mode` | GET/POST | 防火墙模式 |
+| `/api/firewall/rules` | GET/POST | 防火墙规则 |
+| `/api/firewall/check` | POST | IP 检查 |
+| `/api/diagnostic/run` | POST | 运行诊断 |
+| `/api/diagnostic/report` | GET | 诊断报告 |
 
-## 免责声明
+---
 
-本项目仅供学习交流用途，核心功能来源于[fatedier/frp](https://github.com/fatedier/frp)，如有侵权，请联系删除
+## 🔗 相关项目
 
-## 许可证
-https://www.7ed.net/gitmirror/hub.html
-[MIT](./LICENSE) License &copy; 2024-PRESENT [xxl6097](https://github.com/xxl6097)
+| 项目 | 说明 |
+|------|------|
+| [fatedier/frp](https://github.com/fatedier/frp) | frp 原始项目，核心代理引擎 |
+| [xxl6097/go-frp-panel](https://github.com/xxl6097/go-frp-panel) | 原始面板项目，本项目的上游 |
+
+---
+
+## 📜 许可证
+
+[MIT](./LICENSE) License
+
+本项目基于 [xxl6097/go-frp-panel](https://github.com/xxl6097/go-frp-panel) 二次开发，核心 frp 引擎来自 [fatedier/frp](https://github.com/fatedier/frp)。
