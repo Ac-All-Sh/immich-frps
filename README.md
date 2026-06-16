@@ -46,33 +46,81 @@
 
 ---
 
-## 🚀 快速上手
+## 🚀 各平台部署
 
-### 方式一：二进制安装（推荐）
+> 详细文档请访问 **[使用手册 (doc.html)](doc.html)**（支持中/English 切换）
 
-从 [Releases](https://github.com/attychen/immich-frps/releases) 下载对应架构的二进制文件：
+### Linux
+
+| 架构 | 适用设备 |
+|------|----------|
+| `amd64` | x86_64 服务器 / 虚拟机 |
+| `arm64` | 树莓派 4/5、ARM 云服务器 |
+| `arm` / `armhf` | 树莓派 3、老旧 ARM 设备 |
+| `mips64` / `mips64le` | 龙芯 3A/3B |
+| `mips` / `mipsle` | 路由器 (MT7621 等) |
+| `riscv64` | 昉·星光、SiFive |
+| `loong64` | 龙芯 3A6000 |
 
 ```bash
-# 以 Linux amd64 为例
-wget https://github.com/attychen/immich-frps/releases/latest/download/acfrps_v0.69.1_attychen_linux_amd64
-chmod +x acfrps_v0.69.1_attychen_linux_amd64
-./acfrps_v0.69.1_attychen_linux_amd64 install
+# 下载（替换 {arch} 为对应架构，如 amd64 / arm64）
+wget https://github.com/attychen/immich-frps/releases/latest/download/acfrps_v0.69.1_attychen_linux_{arch}
+chmod +x acfrps_v0.69.1_attychen_linux_{arch}
+./acfrps_v0.69.1_attychen_linux_{arch} install
+# 按提示输入端口、用户名、密码
 ```
 
-按提示输入端口、用户名、密码即可完成安装。
+### Windows
 
-### 方式二：Docker 部署
+| 架构 | 适用设备 |
+|------|----------|
+| `amd64` | 绝大多数 Windows PC / Server |
+| `arm64` | Surface Pro X、ARM 笔记本 |
+
+```powershell
+# PowerShell 管理员运行
+# 下载 acfrps_v0.69.1_attychen_windows_amd64.exe
+.\acfrps_v0.69.1_attychen_windows_amd64.exe install
+```
+
+### macOS
+
+| 架构 | 适用设备 |
+|------|----------|
+| `amd64` | Intel Mac |
+| `arm64` | Apple Silicon (M1/M2/M3) |
 
 ```bash
-# 拉取镜像（自动适配 amd64 / arm64 / armv7）
-docker pull acallsh/frps-panel:latest
+# 下载对应架构
+chmod +x acfrps_v0.69.1_attychen_darwin_{arch}
+./acfrps_v0.69.1_attychen_darwin_{arch} install
+```
 
-# 运行 frps 面板
+### FreeBSD
+
+```bash
+fetch https://github.com/attychen/immich-frps/releases/latest/download/acfrps_v0.69.1_attychen_freebsd_amd64
+chmod +x acfrps_v0.69.1_attychen_freebsd_amd64
+./acfrps_v0.69.1_attychen_freebsd_amd64 install
+```
+
+### Docker
+
+```bash
+docker pull acallsh/frps-panel:latest
 docker run -d --name frps-panel --network host \
   -v /etc/frp:/etc/frp \
-  -v /var/log/frp:/var/log/frp \
   acallsh/frps-panel:latest
 ```
+
+> 📖 完整安装指南、配置参数说明、API 文档 → **[doc.html](doc.html)**
+
+---
+
+## 📞 联系方式
+
+- **WeChat**: `attychen`
+- **GitHub Issues**: [https://github.com/attychen/immich-frps/issues](https://github.com/attychen/immich-frps/issues)
 
 ---
 

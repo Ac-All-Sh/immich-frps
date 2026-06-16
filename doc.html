@@ -1,339 +1,400 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>frps 部署脚本 - 使用文档</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23667eea'><path d='M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.185v1.887c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.186m0 2.716h2.118a.186.186 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.186m-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.185.185.186m-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.186.186 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.185.186.186m5.893 2.715h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.185m-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.887c0 .102.083.185.185.185m-2.964 0h2.119a.186.186 0 00.185-.185V9.006a.186.186 0 00-.185-.186H5.136a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185m-2.92 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.887c0 .102.082.185.185.185M23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338.001-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 00-.75.748 11.376 11.376 0 00.692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137.983.003 1.963-.086 2.93-.266a12.248 12.248 0 003.823-1.389c.98-.567 1.86-1.288 2.61-2.136 1.252-1.418 1.998-2.997 2.553-4.4h.221c1.372 0 2.215-.549 2.68-1.009.309-.293.55-.65.707-1.046l.098-.288Z'/></svg>">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --primary: #667eea;
-            --primary-dark: #5a67d8;
-            --secondary: #764ba2;
-            --success: #48bb78;
-            --warning: #ed8936;
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
-            --bg-input: #334155;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --border: #475569;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-primary);
-            line-height: 1.8;
-        }
-        .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
-        header { text-align: center; margin-bottom: 3rem; padding: 2rem 0; border-bottom: 1px solid var(--border); }
-        .logo { display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 0.5rem; }
-        .logo svg { color: var(--primary); }
-        .logo h1 { font-size: 1.8rem; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .header-controls { display: flex; gap: 1rem; justify-content: center; margin-top: 1rem; }
-        .nav-link { color: var(--text-secondary); text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; transition: all 0.2s; }
-        .nav-link:hover { background: var(--bg-input); color: var(--text-primary); }
-        .lang-btn { padding: 0.5rem 1rem; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px; cursor: pointer; font-weight: 600; }
-        .lang-btn:hover { background: var(--border); }
-        .content { background: var(--bg-card); border-radius: 12px; padding: 2rem; border: 1px solid var(--border); margin-bottom: 2rem; }
-        h2 { color: var(--primary); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); font-size: 1.5rem; }
-        h3 { color: var(--text-primary); margin: 1.5rem 0 0.75rem; }
-        p { color: var(--text-secondary); margin-bottom: 1rem; }
-        ul, ol { color: var(--text-secondary); margin-left: 1.5rem; margin-bottom: 1rem; }
-        li { margin-bottom: 0.5rem; }
-        code { background: var(--bg-dark); padding: 0.2rem 0.4rem; border-radius: 4px; font-family: 'Monaco', monospace; font-size: 0.9em; color: var(--success); }
-        pre { background: var(--bg-dark); padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; }
-        pre code { padding: 0; background: none; }
-        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
-        th, td { padding: 0.75rem; text-align: left; border: 1px solid var(--border); }
-        th { background: var(--bg-input); font-weight: 600; }
-        td { color: var(--text-secondary); }
-        .warning { background: rgba(237, 137, 54, 0.1); border: 1px solid rgba(237, 137, 54, 0.3); border-radius: 8px; padding: 1rem; margin: 1rem 0; }
-        .warning strong { color: var(--warning); }
-        footer { text-align: center; margin-top: 3rem; padding: 2rem; border-top: 1px solid var(--border); color: var(--text-secondary); }
-        footer a { color: var(--primary); text-decoration: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>frps-panel 使用手册 / User Manual</title>
+<style>
+  :root {
+    --bg: #f8f9fa; --card-bg: #fff; --text: #212529;
+    --text-secondary: #6c757d; --border: #dee2e6;
+    --primary: #0d6efd; --code-bg: #f1f3f5; --heading: #1a1a2e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif; background: var(--bg); color: var(--text); line-height: 1.8; }
+  .container { max-width: 960px; margin: 0 auto; padding: 20px; }
+
+  .lang-bar { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 20px; position: sticky; top: 0; background: var(--bg); padding: 10px 0; z-index: 100; border-bottom: 1px solid var(--border); }
+  .lang-btn { padding: 6px 18px; border: 1px solid var(--primary); background: #fff; color: var(--primary); border-radius: 4px; cursor: pointer; font-size: 14px; transition: all .2s; }
+  .lang-btn.active { background: var(--primary); color: #fff; }
+
+  .header { text-align: center; padding: 40px 0 30px; border-bottom: 2px solid var(--border); margin-bottom: 30px; }
+  .header h1 { font-size: 2em; color: var(--heading); }
+  .header .subtitle { color: var(--text-secondary); font-size: 1.1em; margin-top: 8px; }
+  .header .meta { font-size: 0.9em; color: var(--text-secondary); margin-top: 6px; }
+
+  .toc { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 24px 28px; margin-bottom: 30px; }
+  .toc h3 { margin-bottom: 12px; color: var(--heading); }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin: 4px 0; }
+  .toc a { color: var(--primary); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  section { margin-bottom: 36px; }
+  h2 { color: var(--heading); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 16px; font-size: 1.5em; }
+  h3 { color: var(--heading); margin: 20px 0 10px; font-size: 1.2em; }
+  h4 { color: var(--text-secondary); margin: 14px 0 8px; font-size: 1.05em; }
+  p { margin-bottom: 12px; }
+
+  .info-card { background: #e7f3ff; border-left: 4px solid var(--primary); padding: 12px 18px; margin: 16px 0; border-radius: 0 6px 6px 0; font-size: 0.95em; }
+  .warn-card { background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px 18px; margin: 16px 0; border-radius: 0 6px 6px 0; font-size: 0.95em; }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.92em; }
+  th, td { border: 1px solid var(--border); padding: 10px 14px; text-align: left; }
+  th { background: var(--code-bg); font-weight: 600; }
+  tr:nth-child(even) { background: #f8f9fa; }
+
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 16px 20px; border-radius: 6px; overflow-x: auto; font-size: 0.88em; line-height: 1.6; margin: 12px 0; }
+  code { font-family: "SF Mono", "Fira Code", "Consolas", monospace; }
+  :not(pre) > code { background: var(--code-bg); padding: 2px 6px; border-radius: 3px; font-size: 0.9em; color: #d63384; }
+
+  [lang] { display: none; }
+  body.show-zh [lang="zh"] { display: revert; }
+  body.show-en [lang="en"] { display: revert; }
+
+  @media (max-width: 768px) {
+    .container { padding: 12px; }
+    .header h1 { font-size: 1.5em; }
+    pre { padding: 10px 14px; font-size: 0.8em; }
+    table { font-size: 0.8em; }
+    th, td { padding: 6px 8px; }
+  }
+</style>
 </head>
-<body>
-    <div class="container">
-        <header>
-            <div class="logo">
-                <svg viewBox="0 0 24 24" width="36" height="36" fill="currentColor">
-                    <path d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.185v1.887c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.186m0 2.716h2.118a.186.186 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.186m-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.185.185.186m-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.186.186 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.185.186.186m5.893 2.715h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.185m-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.887c0 .102.083.185.185.185m-2.964 0h2.119a.186.186 0 00.185-.185V9.006a.186.186 0 00-.185-.186H5.136a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185m-2.92 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.887c0 .102.082.185.185.185M23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338.001-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 00-.75.748 11.376 11.376 0 00.692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137.983.003 1.963-.086 2.93-.266a12.248 12.248 0 003.823-1.389c.98-.567 1.86-1.288 2.61-2.136 1.252-1.418 1.998-2.997 2.553-4.4h.221c1.372 0 2.215-.549 2.68-1.009.309-.293.55-.65.707-1.046l.098-.288Z"/>
-                </svg>
-                <h1 id="page-title">frps 部署脚本 - 使用文档</h1>
-            </div>
-            <div class="header-controls">
-                <a href="https://github.com/Ac-All-Sh/immich-frps" class="nav-link">GitHub</a>
-                <button class="lang-btn" onclick="toggleLanguage()" id="langBtn">EN</button>
-            </div>
-        </header>
+<body class="show-zh">
+<div class="lang-bar">
+  <button class="lang-btn active" onclick="switchLang('zh')">中文</button>
+  <button class="lang-btn" onclick="switchLang('en')">English</button>
+</div>
+<div class="container">
 
-        <div class="content" id="doc-zh">
-            <h2>简介</h2>
-            <p>frps 一键部署脚本是一个交互式工具，用于在 Linux 服务器上快速部署和管理 frps (Fast Reverse Proxy) 服务。</p>
+<div class="header">
+  <h1>frps-panel <span lang="zh">使用手册</span><span lang="en">User Manual</span></h1>
+  <div class="subtitle" lang="zh">frp 内网穿透可视化管理面板 — 全架构部署指南</div>
+  <div class="subtitle" lang="en">frp Visual Management Panel — Cross-Architecture Deployment Guide</div>
+  <div class="meta">Version: v0.69.1_attychen &nbsp;|&nbsp; <span lang="zh">作者</span><span lang="en">Author</span>: attychen &nbsp;|&nbsp; 2026</div>
+</div>
 
-            <h2>系统要求</h2>
-            <ul>
-                <li>操作系统: Debian 10/11/12, Ubuntu 20.04/22.04/24.04</li>
-                <li>权限: root 用户</li>
-                <li>依赖: curl, tar (脚本自动安装)</li>
-            </ul>
+<div class="toc">
+  <h3 lang="zh">目录</h3><h3 lang="en">Table of Contents</h3>
+  <ol>
+    <li><a href="#overview"><span lang="zh">项目概述</span><span lang="en">Overview</span></a></li>
+    <li><a href="#arch"><span lang="zh">架构支持</span><span lang="en">Architecture Support</span></a></li>
+    <li><a href="#linux"><span lang="zh">Linux 部署</span><span lang="en">Linux Deployment</span></a></li>
+    <li><a href="#windows"><span lang="zh">Windows 部署</span><span lang="en">Windows Deployment</span></a></li>
+    <li><a href="#macos"><span lang="zh">macOS 部署</span><span lang="en">macOS Deployment</span></a></li>
+    <li><a href="#freebsd"><span lang="zh">FreeBSD 部署</span><span lang="en">FreeBSD Deployment</span></a></li>
+    <li><a href="#android"><span lang="zh">Android 部署</span><span lang="en">Android Deployment</span></a></li>
+    <li><a href="#docker"><span lang="zh">Docker 部署</span><span lang="en">Docker Deployment</span></a></li>
+    <li><a href="#frps-config"><span lang="zh">服务端配置</span><span lang="en">Server Configuration</span></a></li>
+    <li><a href="#frpc-config"><span lang="zh">客户端配置</span><span lang="en">Client Configuration</span></a></li>
+    <li><a href="#web-panel"><span lang="zh">Web 管理面板</span><span lang="en">Web Management Panel</span></a></li>
+    <li><a href="#api"><span lang="zh">API 参考</span><span lang="en">API Reference</span></a></li>
+    <li><a href="#faq"><span lang="zh">常见问题</span><span lang="en">FAQ</span></a></li>
+  </ol>
+</div>
 
-            <h2>快速开始</h2>
-            <pre><code>git clone https://github.com/Ac-All-Sh/immich-frps.git
-cd immich-frps
-bash deploy_frps.sh</code></pre>
+<!-- ═══════════════ 1. OVERVIEW ═══════════════ -->
+<section id="overview">
+  <h2>1. <span lang="zh">项目概述</span><span lang="en">Overview</span></h2>
+  <p lang="zh"><strong>frps-panel</strong> 是基于 <a href="https://github.com/fatedier/frp">fatedier/frp</a> 二次开发的 frp 内网穿透可视化管理面板。提供 frps 服务端与 frpc 客户端的 Web 管理界面，支持 <strong>16 种 CPU 架构</strong>，免配置文件，一键安装。适用于 Immich 照片同步等大文件传输场景的深度优化。</p>
+  <p lang="en"><strong>frps-panel</strong> is a visual management panel for frp, forked from <a href="https://github.com/fatedier/frp">fatedier/frp</a>. It provides Web-based management for both frps server and frpc client, supporting <strong>16 CPU architectures</strong> with one-click installation. Deeply optimized for large file transfer scenarios such as Immich photo sync.</p>
+  <div class="info-card">
+    <strong lang="zh">核心特性</strong><strong lang="en">Key Features</strong>
+    <p lang="zh">📊 监控仪表盘 &nbsp;·&nbsp; ⚡ 智能优化引擎 &nbsp;·&nbsp; 📡 带宽管理 &nbsp;·&nbsp; 🛡️ 防火墙 &nbsp;·&nbsp; 🔄 在线升级 &nbsp;·&nbsp; 🌐 国际化 (中/英)</p>
+    <p lang="en">📊 Monitor Dashboard &nbsp;·&nbsp; ⚡ Optimization Engine &nbsp;·&nbsp; 📡 Bandwidth Manager &nbsp;·&nbsp; 🛡️ Firewall &nbsp;·&nbsp; 🔄 Online Upgrade &nbsp;·&nbsp; 🌐 i18n (ZH/EN)</p>
+  </div>
+</section>
 
-            <h2>主菜单说明</h2>
-            <table>
-                <tr><th>选项</th><th>功能</th><th>说明</th></tr>
-                <tr><td>[1]</td><td>一键部署</td><td>使用当前配置部署 frps 服务端</td></tr>
-                <tr><td>[2]</td><td>修改配置</td><td>修改端口、用户名、密码、Token 等</td></tr>
-                <tr><td>[3]</td><td>查看配置</td><td>查看当前所有配置项</td></tr>
-                <tr><td>[4]</td><td>管理服务</td><td>启动/停止/重启/状态/日志</td></tr>
-                <tr><td>[5]</td><td>生成 frpc 配置</td><td>生成客户端配置文件</td></tr>
-                <tr><td>[6]</td><td>配置备份/恢复</td><td>导出或导入 frps 配置</td></tr>
-                <tr><td>[7]</td><td>多服务器管理</td><td>管理多个 frps 服务器实例</td></tr>
-                <tr><td>[8]</td><td>监控面板</td><td>查看连接数、流量等统计</td></tr>
-                <tr><td>[9]</td><td>卸载 frps</td><td>清除所有 frps 相关配置</td></tr>
-            </table>
+<!-- ═══════════════ 2. ARCH ═══════════════ -->
+<section id="arch">
+  <h2>2. <span lang="zh">架构支持</span><span lang="en">Architecture Support</span></h2>
+  <table>
+    <thead><tr><th lang="zh">操作系统</th><th lang="en">OS</th><th lang="zh">架构</th><th lang="en">Arch</th><th lang="zh">典型设备</th><th lang="en">Typical Device</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="10">Linux</td><td>amd64</td><td lang="zh">x86_64 服务器</td><td lang="en">x86_64 Server</td></tr>
+      <tr><td>arm64</td><td lang="zh">树莓派 4/5</td><td lang="en">Raspberry Pi 4/5</td></tr>
+      <tr><td>arm (v5)</td><td lang="zh">老旧 ARM</td><td lang="en">Legacy ARM</td></tr>
+      <tr><td>armhf (v7)</td><td lang="zh">树莓派 2/3</td><td lang="en">Raspberry Pi 2/3</td></tr>
+      <tr><td>mips64</td><td lang="zh">龙芯 3A/3B (大端)</td><td lang="en">Loongson 3A/3B (BE)</td></tr>
+      <tr><td>mips64le</td><td lang="zh">龙芯 3A/3B (小端)</td><td lang="en">Loongson 3A/3B (LE)</td></tr>
+      <tr><td>mips (softfloat)</td><td lang="zh">路由器 MT7621</td><td lang="en">Router MT7621</td></tr>
+      <tr><td>mipsle (softfloat)</td><td lang="zh">路由器 (小端)</td><td lang="en">Router (LE)</td></tr>
+      <tr><td>riscv64</td><td lang="zh">昉·星光 / SiFive</td><td lang="en">VisionFive / SiFive</td></tr>
+      <tr><td>loong64</td><td lang="zh">龙芯 3A6000</td><td lang="en">Loongson 3A6000</td></tr>
+      <tr><td rowspan="2">Windows</td><td>amd64</td><td lang="zh">绝大多数 PC</td><td lang="en">Most PCs</td></tr>
+      <tr><td>arm64</td><td lang="zh">Surface Pro X</td><td lang="en">Surface Pro X</td></tr>
+      <tr><td rowspan="2">macOS</td><td>amd64</td><td lang="zh">Intel Mac</td><td lang="en">Intel Mac</td></tr>
+      <tr><td>arm64</td><td lang="zh">Apple Silicon (M1-M3)</td><td lang="en">Apple Silicon (M1-M3)</td></tr>
+      <tr><td>FreeBSD</td><td>amd64</td><td lang="zh">FreeBSD 服务器</td><td lang="en">FreeBSD Server</td></tr>
+      <tr><td>Android</td><td>arm64</td><td lang="zh">Termux 环境</td><td lang="en">Termux Environment</td></tr>
+      <tr><td rowspan="3">Docker</td><td>amd64</td><td colspan="2" lang="zh">多架构 Docker 镜像</td></tr>
+      <tr><td>arm64</td><td colspan="2" lang="en">Multi-Arch Docker Image</td></tr>
+      <tr><td>arm/v7</td><td colspan="2"></td></tr>
+    </tbody>
+  </table>
+  <p lang="zh"><strong>命名规则：</strong> <code>acfrps_v{版本}_attychen_{系统}_{架构}[.exe]</code>。如 <code>acfrps_v0.69.1_attychen_linux_amd64</code>。</p>
+  <p lang="en"><strong>Naming:</strong> <code>acfrps_v{version}_attychen_{os}_{arch}[.exe]</code>. E.g. <code>acfrps_v0.69.1_attychen_linux_amd64</code>.</p>
+</section>
 
-            <h2>配置备份/恢复</h2>
-            <h3>备份配置</h3>
-            <pre><code># 选择 [6] → [1]
-# 备份文件保存在: /root/frps_backups/</code></pre>
+<!-- ═══════════════ 3. LINUX ═══════════════ -->
+<section id="linux">
+  <h2>3. <span lang="zh">Linux 部署</span><span lang="en">Linux Deployment</span></h2>
+  <h3>3.1 <span lang="zh">通用安装步骤</span><span lang="en">General Steps</span></h3>
+  <p lang="zh">从 <a href="https://github.com/attychen/immich-frps/releases">Releases</a> 下载对应架构的二进制文件，赋予执行权限后安装为系统服务。</p>
+  <p lang="en">Download the binary for your architecture from <a href="https://github.com/attychen/immich-frps/releases">Releases</a>, grant execute permission, and install as a system service.</p>
+  <pre><code># <span lang="zh">下载并安装 (以 amd64 为例)</span><span lang="en">Download &amp; install (amd64 example)</span>
+wget https://github.com/attychen/immich-frps/releases/latest/download/acfrps_v0.69.1_attychen_linux_amd64
+chmod +x acfrps_v0.69.1_attychen_linux_amd64
+sudo ./acfrps_v0.69.1_attychen_linux_amd64 install</code></pre>
+  <p lang="zh">安装程序将交互式提示输入：绑定端口 → 管理后台端口 → 后台地址 → 用户名 → 密码。</p>
+  <p lang="en">The installer will interactively prompt for: bind port → dashboard port → dashboard address → username → password.</p>
 
-            <h3>恢复配置</h3>
-            <pre><code># 选择 [6] → [2]
-# 输入备份文件路径即可恢复</code></pre>
+  <h3>3.2 <span lang="zh">各架构专项说明</span><span lang="en">Architecture Notes</span></h3>
 
-            <h2>多服务器管理</h2>
-            <h3>添加服务器</h3>
-            <pre><code># 选择 [7] → [1]
-# 输入服务器名称、IP、SSH 端口、用户名</code></pre>
+  <h4>amd64</h4>
+  <p lang="zh">适用绝大多数 x86_64 Linux 服务器，无需额外依赖。</p>
+  <p lang="en">For most x86_64 Linux servers. No extra dependencies.</p>
 
-            <h3>远程管理</h3>
-            <pre><code># 选择 [7] → [3]
-# 选择服务器后可执行远程命令</code></pre>
+  <h4>arm64 <span lang="zh">（AArch64）</span></h4>
+  <p lang="zh">适用树莓派 4/5、Orange Pi 5、AWS Graviton 等 ARM 64 位设备。</p>
+  <p lang="en">For Raspberry Pi 4/5, Orange Pi 5, AWS Graviton, and other ARM 64-bit devices.</p>
 
-            <h2>监控面板</h2>
-            <pre><code># 选择 [8]
-# 显示:
-# - 服务状态 (运行中/已停止)
-# - 进程信息 (PID/内存/CPU)
-# - 网络连接数
-# - 系统资源使用
-# - 最近日志</code></pre>
+  <h4>arm (v5) / armhf (v7)</h4>
+  <p lang="zh"><strong>armhf (v7)</strong> 适用树莓派 2/3 等支持硬件浮点的设备；<strong>arm (v5)</strong> 适用老旧 ARM 设备。</p>
+  <p lang="en"><strong>armhf (v7)</strong> for Raspberry Pi 2/3 and devices with hardware FP. <strong>arm (v5)</strong> for legacy ARM.</p>
+  <pre><code># armhf (v7)
+wget https://github.com/attychen/immich-frps/releases/latest/download/acfrps_v0.69.1_attychen_linux_armhf
+chmod +x acfrps_v0.69.1_attychen_linux_armhf
+sudo ./acfrps_v0.69.1_attychen_linux_armhf install</code></pre>
 
-            <h2>Docker 部署</h2>
-            <h3>使用 Docker</h3>
-            <pre><code># 拉取镜像
-docker pull acallsh/frps:0.69.1
+  <h4>mips / mipsle <span lang="zh">（路由器）</span></h4>
+  <p lang="zh">适用 MT7621、MT7620 等 MIPS 架构路由器（软浮点）。需已刷 OpenWrt/Padavan 且存储空间充足。<strong>注意：</strong>mipsle（小端）更为常见。</p>
+  <p lang="en">For MT7621, MT7620 MIPS routers (soft-float). Requires OpenWrt/Padavan with sufficient storage. <strong>Note:</strong> mipsle (little-endian) is more common.</p>
+  <pre><code># mipsle (<span lang="zh">小端，推荐</span><span lang="en">little-endian, recommended</span>)
+wget https://github.com/attychen/immich-frps/releases/latest/download/acfrps_v0.69.1_attychen_linux_mipsle
+chmod +x acfrps_v0.69.1_attychen_linux_mipsle
+./acfrps_v0.69.1_attychen_linux_mipsle install</code></pre>
 
-# 运行容器
-docker run -d \
-  --name frps \
-  --restart unless-stopped \
-  --network host \
-  -v /etc/frp/frps.toml:/etc/frp/frps.toml \
-  -v /var/log/frp:/var/log/frp \
-  acallsh/frps:0.69.1</code></pre>
+  <h4>mips64 / mips64le <span lang="zh">（龙芯 3A/3B）</span></h4>
+  <p lang="zh">适用龙芯 3A/3B 处理器。请根据系统字节序选择：<code>mips64</code> 大端，<code>mips64le</code> 小端。</p>
+  <p lang="en">For Loongson 3A/3B. Choose based on endianness: <code>mips64</code> = BE, <code>mips64le</code> = LE.</p>
 
-            <h3>使用 Docker Compose</h3>
-            <pre><code>version: '3'
+  <h4>riscv64</h4>
+  <p lang="zh">适用 RISC-V 64 位开发板（昉·星光、SiFive HiFive 等）。</p>
+  <p lang="en">For RISC-V 64-bit boards (VisionFive, SiFive HiFive, etc.).</p>
+
+  <h4>loong64 <span lang="zh">（龙芯 LoongArch）</span></h4>
+  <p lang="zh">适用龙芯 3A6000 等 LoongArch 架构处理器。<strong>注意：</strong>这是龙芯自主指令集，非 MIPS。</p>
+  <p lang="en">For Loongson 3A6000 and newer LoongArch processors. <strong>Note:</strong> This is Loongson's own ISA, not MIPS.</p>
+
+  <h3>3.3 <span lang="zh">服务管理命令</span><span lang="en">Service Commands</span></h3>
+  <table>
+    <tr><th lang="zh">命令</th><th lang="en">Command</th><th lang="zh">说明</th><th lang="en">Description</th></tr>
+    <tr><td><code>install</code></td><td lang="zh">安装为系统服务</td><td lang="en">Install as system service</td></tr>
+    <tr><td><code>uninstall</code></td><td lang="zh">卸载服务</td><td lang="en">Uninstall service</td></tr>
+    <tr><td><code>start</code></td><td lang="zh">启动服务</td><td lang="en">Start service</td></tr>
+    <tr><td><code>stop</code></td><td lang="zh">停止服务</td><td lang="en">Stop service</td></tr>
+    <tr><td><code>restart</code></td><td lang="zh">重启服务</td><td lang="en">Restart service</td></tr>
+    <tr><td><code>status</code></td><td lang="zh">查看状态</td><td lang="en">Check status</td></tr>
+  </table>
+</section>
+
+<!-- ═══════════════ 4. WINDOWS ═══════════════ -->
+<section id="windows">
+  <h2>4. <span lang="zh">Windows 部署</span><span lang="en">Windows Deployment</span></h2>
+  <div class="warn-card">
+    <p lang="zh">必须以<strong>管理员身份</strong>运行 PowerShell 或 CMD，否则无法注册系统服务。</p>
+    <p lang="en">Must run PowerShell or CMD as <strong>Administrator</strong> to register the system service.</p>
+  </div>
+  <h4>amd64</h4>
+  <pre><code>.\acfrps_v0.69.1_attychen_windows_amd64.exe install</code></pre>
+  <h4>arm64</h4>
+  <pre><code>.\acfrps_v0.69.1_attychen_windows_arm64.exe install</code></pre>
+</section>
+
+<!-- ═══════════════ 5. macOS ═══════════════ -->
+<section id="macos">
+  <h2>5. <span lang="zh">macOS 部署</span><span lang="en">macOS Deployment</span></h2>
+  <div class="warn-card">
+    <p lang="zh">首次运行可能被 Gatekeeper 拦截，请在 <strong>系统设置 → 隐私与安全性</strong> 中允许。</p>
+    <p lang="en">Gatekeeper may block first run. Allow in <strong>System Settings → Privacy & Security</strong>.</p>
+  </div>
+  <h4>Intel (amd64)</h4>
+  <pre><code>curl -LO https://github.com/attychen/immich-frps/releases/latest/download/acfrps_v0.69.1_attychen_darwin_amd64
+chmod +x acfrps_v0.69.1_attychen_darwin_amd64
+sudo ./acfrps_v0.69.1_attychen_darwin_amd64 install</code></pre>
+  <h4>Apple Silicon (arm64)</h4>
+  <pre><code>curl -LO https://github.com/attychen/immich-frps/releases/latest/download/acfrps_v0.69.1_attychen_darwin_arm64
+chmod +x acfrps_v0.69.1_attychen_darwin_arm64
+sudo ./acfrps_v0.69.1_attychen_darwin_arm64 install</code></pre>
+</section>
+
+<!-- ═══════════════ 6. FREEBSD ═══════════════ -->
+<section id="freebsd">
+  <h2>6. <span lang="zh">FreeBSD 部署</span><span lang="en">FreeBSD Deployment</span></h2>
+  <pre><code>fetch https://github.com/attychen/immich-frps/releases/latest/download/acfrps_v0.69.1_attychen_freebsd_amd64
+chmod +x acfrps_v0.69.1_attychen_freebsd_amd64
+./acfrps_v0.69.1_attychen_freebsd_amd64 install</code></pre>
+</section>
+
+<!-- ═══════════════ 7. ANDROID ═══════════════ -->
+<section id="android">
+  <h2>7. <span lang="zh">Android 部署 (Termux)</span><span lang="en">Android Deployment (Termux)</span></h2>
+  <div class="warn-card">
+    <p lang="zh">需要先安装 <a href="https://termux.dev/">Termux</a> 终端模拟器。</p>
+    <p lang="en">Requires <a href="https://termux.dev/">Termux</a> terminal emulator installed first.</p>
+  </div>
+  <pre><code># <span lang="zh">在 Termux 中执行</span><span lang="en">Run in Termux</span>
+pkg install wget -y
+wget https://github.com/attychen/immich-frps/releases/latest/download/acfrps_v0.69.1_attychen_android_arm64
+chmod +x acfrps_v0.69.1_attychen_android_arm64
+./acfrps_v0.69.1_attychen_android_arm64 install</code></pre>
+</section>
+
+<!-- ═══════════════ 8. DOCKER ═══════════════ -->
+<section id="docker">
+  <h2>8. <span lang="zh">Docker 部署</span><span lang="en">Docker Deployment</span></h2>
+  <p lang="zh">支持：<code>linux/amd64</code> &bull; <code>linux/arm64</code> &bull; <code>linux/arm/v7</code></p>
+  <p lang="en">Supports: <code>linux/amd64</code> &bull; <code>linux/arm64</code> &bull; <code>linux/arm/v7</code></p>
+
+  <h4>docker run</h4>
+  <pre><code># <span lang="zh">host 网络模式 (推荐)</span><span lang="en">host network mode (recommended)</span>
+docker run -d --name frps-panel --network host --restart unless-stopped \
+  -v /etc/frp:/etc/frp -v /var/log/frp:/var/log/frp \
+  acallsh/frps-panel:latest
+
+# <span lang="zh">桥接模式</span><span lang="en">bridge mode</span>
+docker run -d --name frps-panel --restart unless-stopped \
+  -p 7000:7000 -p 7500:7500 -p 8080:8080 \
+  -v /etc/frp:/etc/frp acallsh/frps-panel:latest</code></pre>
+
+  <h4>docker-compose.yml</h4>
+  <pre><code>version: '3.8'
 services:
-  frps:
-    image: acallsh/frps:0.69.1
-    container_name: frps
-    restart: unless-stopped
+  frps-panel:
+    image: acallsh/frps-panel:latest
+    container_name: frps-panel
     network_mode: host
-    volumes:
-      - /etc/frp/frps.toml:/etc/frp/frps.toml
-      - /var/log/frp:/var/log/frp</code></pre>
-
-            <h2>管理命令</h2>
-            <pre><code>systemctl start frps      # 启动
-systemctl stop frps       # 停止
-systemctl restart frps    # 重启
-systemctl status frps     # 状态
-journalctl -u frps -f     # 日志</code></pre>
-
-            <h2>端口说明</h2>
-            <table>
-                <tr><th>端口</th><th>用途</th></tr>
-                <tr><td>7000</td><td>frps 主端口</td></tr>
-                <tr><td>7500</td><td>Dashboard</td></tr>
-                <tr><td>8080</td><td>HTTP 代理</td></tr>
-                <tr><td>8443</td><td>HTTPS 代理</td></tr>
-            </table>
-
-            <h2>frpc 客户端配置</h2>
-            <pre><code>serverAddr = "你的服务器IP"
-serverPort = 7000
-auth.method = "token"
-auth.token = "immich_secure_token_2026"
-transport.poolCount = 10
-transport.tcpMux = true
-transport.heartbeatInterval = 10
-transport.heartbeatTimeout = 300
-
-[[proxies]]
-name = "ssh"
-type = "tcp"
-localIP = "127.0.0.1"
-localPort = 22
-remotePort = 6000</code></pre>
-
-            <div class="warning">
-                <strong>注意:</strong> 修改配置后需要重启 frps 服务才能生效。
-            </div>
-        </div>
-
-        <div class="content" id="doc-en" style="display: none;">
-            <h2>Introduction</h2>
-            <p>frps One-Click Deploy Script is an interactive tool for quickly deploying and managing frps (Fast Reverse Proxy) service on Linux servers.</p>
-
-            <h2>System Requirements</h2>
-            <ul>
-                <li>OS: Debian 10/11/12, Ubuntu 20.04/22.04/24.04</li>
-                <li>Privileges: root user</li>
-                <li>Dependencies: curl, tar (auto-installed)</li>
-            </ul>
-
-            <h2>Quick Start</h2>
-            <pre><code>git clone https://github.com/Ac-All-Sh/immich-frps.git
-cd immich-frps
-bash deploy_frps.sh</code></pre>
-
-            <h2>Main Menu</h2>
-            <table>
-                <tr><th>Option</th><th>Function</th><th>Description</th></tr>
-                <tr><td>[1]</td><td>One-Click Deploy</td><td>Deploy frps with current config</td></tr>
-                <tr><td>[2]</td><td>Modify Config</td><td>Modify ports, username, password, token</td></tr>
-                <tr><td>[3]</td><td>View Config</td><td>View all config items</td></tr>
-                <tr><td>[4]</td><td>Manage Service</td><td>Start/Stop/Restart/Status/Logs</td></tr>
-                <tr><td>[5]</td><td>Generate frpc Config</td><td>Generate client config file</td></tr>
-                <tr><td>[6]</td><td>Backup/Restore</td><td>Export or import frps config</td></tr>
-                <tr><td>[7]</td><td>Multi-Server</td><td>Manage multiple frps instances</td></tr>
-                <tr><td>[8]</td><td>Monitor</td><td>View connections, traffic stats</td></tr>
-                <tr><td>[9]</td><td>Uninstall</td><td>Remove all frps configs</td></tr>
-            </table>
-
-            <h2>Backup/Restore</h2>
-            <h3>Backup</h3>
-            <pre><code># Select [6] → [1]
-# Backup saved to: /root/frps_backups/</code></pre>
-
-            <h3>Restore</h3>
-            <pre><code># Select [6] → [2]
-# Enter backup file path to restore</code></pre>
-
-            <h2>Multi-Server Management</h2>
-            <h3>Add Server</h3>
-            <pre><code># Select [7] → [1]
-# Enter server name, IP, SSH port, username</code></pre>
-
-            <h3>Remote Management</h3>
-            <pre><code># Select [7] → [3]
-# Select server to execute remote commands</code></pre>
-
-            <h2>Monitor Panel</h2>
-            <pre><code># Select [8]
-# Shows:
-# - Service status (running/stopped)
-# - Process info (PID/memory/CPU)
-# - Network connections
-# - System resources
-# - Recent logs</code></pre>
-
-            <h2>Docker Deployment</h2>
-            <h3>Using Docker</h3>
-            <pre><code># Pull image
-docker pull acallsh/frps:0.69.1
-
-# Run container
-docker run -d \
-  --name frps \
-  --restart unless-stopped \
-  --network host \
-  -v /etc/frp/frps.toml:/etc/frp/frps.toml \
-  -v /var/log/frp:/var/log/frp \
-  acallsh/frps:0.69.1</code></pre>
-
-            <h3>Using Docker Compose</h3>
-            <pre><code>version: '3'
-services:
-  frps:
-    image: acallsh/frps:0.69.1
-    container_name: frps
     restart: unless-stopped
-    network_mode: host
     volumes:
-      - /etc/frp/frps.toml:/etc/frp/frps.toml
+      - /etc/frp:/etc/frp
       - /var/log/frp:/var/log/frp</code></pre>
+</section>
 
-            <h2>Management Commands</h2>
-            <pre><code>systemctl start frps      # Start
-systemctl stop frps       # Stop
-systemctl restart frps    # Restart
-systemctl status frps     # Status
-journalctl -u frps -f     # Logs</code></pre>
+<!-- ═══════════════ 9. FRPS CONFIG ═══════════════ -->
+<section id="frps-config">
+  <h2>9. <span lang="zh">服务端配置</span><span lang="en">Server Configuration</span></h2>
+  <p lang="zh">配置文件 <code>/etc/frp/frps.toml</code>，可通过 Web 面板在线修改或直接编辑。</p>
+  <p lang="en">Config file: <code>/etc/frp/frps.toml</code>. Editable via Web panel or directly.</p>
+  <pre><code>bindPort = 7000
+auth.token = "your_secure_token"
 
-            <h2>Port Reference</h2>
-            <table>
-                <tr><th>Port</th><th>Usage</th></tr>
-                <tr><td>7000</td><td>frps main port</td></tr>
-                <tr><td>7500</td><td>Dashboard</td></tr>
-                <tr><td>8080</td><td>HTTP proxy</td></tr>
-                <tr><td>8443</td><td>HTTPS proxy</td></tr>
-            </table>
+webServer.addr = "0.0.0.0"
+webServer.port = 7500
+webServer.user = "admin"
+webServer.password = "your_password"
 
-            <h2>frpc Client Config</h2>
-            <pre><code>serverAddr = "your-server-ip"
-serverPort = 7000
-auth.method = "token"
-auth.token = "immich_secure_token_2026"
-transport.poolCount = 10
-transport.tcpMux = true
-transport.heartbeatInterval = 10
-transport.heartbeatTimeout = 300
+vhostHTTPPort = 8080
+vhostHTTPSPort = 8443</code></pre>
+</section>
 
-[[proxies]]
-name = "ssh"
-type = "tcp"
-localIP = "127.0.0.1"
-localPort = 22
-remotePort = 6000</code></pre>
+<!-- ═══════════════ 10. FRPC CONFIG ═══════════════ -->
+<section id="frpc-config">
+  <h2>10. <span lang="zh">客户端配置</span><span lang="en">Client Configuration</span></h2>
+  <p lang="zh">frpc 客户端需在 frps Web 面板中生成，二进制内嵌认证密钥，无需手动配置 token。</p>
+  <p lang="en">frpc clients are generated via the frps Web panel. The binary embeds the auth key — no manual token needed.</p>
+  <ol>
+    <li lang="zh">登录 frps Web 面板 → 用户管理 → 新增用户</li>
+    <li lang="en">Login frps Web Panel → User Management → Add User</li>
+    <li lang="zh">选择用户 → 生成客户端 → 下载对应架构 frpc</li>
+    <li lang="en">Select User → Generate Client → Download frpc for target arch</li>
+    <li lang="zh">上传至目标设备，执行 <code>./acfrpc_xxx install</code></li>
+    <li lang="en">Upload to target device, run <code>./acfrpc_xxx install</code></li>
+  </ol>
+</section>
 
-            <div class="warning">
-                <strong>Note:</strong> Restart frps service after modifying config for changes to take effect.
-            </div>
-        </div>
+<!-- ═══════════════ 11. WEB PANEL ═══════════════ -->
+<section id="web-panel">
+  <h2>11. <span lang="zh">Web 管理面板</span><span lang="en">Web Management Panel</span></h2>
+  <p lang="zh">安装完成后访问 <code>http://{服务器IP}:7500</code>。</p>
+  <p lang="en">After installation, visit <code>http://{server-ip}:7500</code>.</p>
+  <table>
+    <tr><th lang="zh">模块</th><th lang="en">Module</th><th lang="zh">说明</th><th lang="en">Description</th></tr>
+    <tr><td lang="zh">监控仪表盘</td><td lang="en">Monitor Dashboard</td><td lang="zh">实时流量、连接数、CPU/内存</td><td lang="en">Real-time traffic, connections, CPU/memory</td></tr>
+    <tr><td lang="zh">智能优化</td><td lang="en">Optimization</td><td lang="zh">5 级传输场景 (1GB~100GB)</td><td lang="en">5-tier transfer profiles (1GB~100GB)</td></tr>
+    <tr><td lang="zh">带宽管理</td><td lang="en">Bandwidth</td><td lang="zh">全局/客户端限速、配额</td><td lang="en">Global/client rate limiting, quotas</td></tr>
+    <tr><td lang="zh">防火墙</td><td lang="en">Firewall</td><td lang="zh">IP 黑白名单</td><td lang="en">IP blacklist/whitelist</td></tr>
+    <tr><td lang="zh">在线升级</td><td lang="en">Upgrade</td><td lang="zh">URL + 文件上传升级</td><td lang="en">URL + file upload upgrade</td></tr>
+    <tr><td lang="zh">用户管理</td><td lang="en">Users</td><td lang="zh">授权 + 客户端生成</td><td lang="en">Auth + client generation</td></tr>
+    <tr><td lang="zh">诊断工具</td><td lang="en">Diagnostics</td><td lang="zh">端口检测、性能分析</td><td lang="en">Port check, performance</td></tr>
+  </table>
+</section>
 
-        <footer>
-            <p>Author: <a href="https://github.com/Ac-All-Sh">Ac.All.Sh</a> | <a href="https://github.com/Ac-All-Sh/immich-frps">GitHub</a></p>
-        </footer>
-    </div>
+<!-- ═══════════════ 12. API ═══════════════ -->
+<section id="api">
+  <h2>12. <span lang="zh">API 参考</span><span lang="en">API Reference</span></h2>
+  <table>
+    <tr><th>Endpoint</th><th>Method</th><th lang="zh">说明</th><th lang="en">Description</th></tr>
+    <tr><td><code>/api/optimize/profile</code></td><td>GET</td><td lang="zh">系统信息 + 优化推荐</td><td lang="en">System info + optimization</td></tr>
+    <tr><td><code>/api/optimize/apply</code></td><td>POST</td><td lang="zh">应用优化</td><td lang="en">Apply optimization</td></tr>
+    <tr><td><code>/api/optimize/rollback</code></td><td>POST</td><td lang="zh">回滚优化</td><td lang="en">Rollback optimization</td></tr>
+    <tr><td><code>/api/bandwidth/global</code></td><td>GET/POST</td><td lang="zh">全局带宽限制</td><td lang="en">Global bandwidth limit</td></tr>
+    <tr><td><code>/api/bandwidth/stats</code></td><td>GET</td><td lang="zh">带宽统计</td><td lang="en">Bandwidth statistics</td></tr>
+    <tr><td><code>/api/bandwidth/client</code></td><td>GET/POST</td><td lang="zh">客户端带宽限制</td><td lang="en">Client bandwidth limit</td></tr>
+    <tr><td><code>/api/firewall/mode</code></td><td>GET/POST</td><td lang="zh">防火墙模式</td><td lang="en">Firewall mode</td></tr>
+    <tr><td><code>/api/firewall/rules</code></td><td>GET/POST</td><td lang="zh">防火墙规则</td><td lang="en">Firewall rules</td></tr>
+    <tr><td><code>/api/diagnostic/run</code></td><td>POST</td><td lang="zh">运行诊断</td><td lang="en">Run diagnostics</td></tr>
+    <tr><td><code>/api/diagnostic/report</code></td><td>GET</td><td lang="zh">诊断报告</td><td lang="en">Diagnostic report</td></tr>
+    <tr><td><code>/api/restart</code></td><td>POST</td><td lang="zh">重启服务</td><td lang="en">Restart service</td></tr>
+  </table>
+</section>
 
-    <script>
-        let currentLang = localStorage.getItem('frps-doc-lang') || 'zh';
+<!-- ═══════════════ 13. FAQ ═══════════════ -->
+<section id="faq">
+  <h2>13. <span lang="zh">常见问题</span><span lang="en">FAQ</span></h2>
 
-        function toggleLanguage() {
-            currentLang = currentLang === 'zh' ? 'en' : 'zh';
-            localStorage.setItem('frps-doc-lang', currentLang);
-            updatePage();
-        }
+  <h4 lang="zh">Q: 如何确认设备架构？</h4><h4 lang="en">Q: How to check device architecture?</h4>
+  <pre><code>uname -m
+# x86_64  → amd64
+# aarch64 → arm64
+# armv7l  → armhf
+# mips    → mips/mipsle</code></pre>
 
-        function updatePage() {
-            document.getElementById('langBtn').textContent = currentLang === 'zh' ? 'EN' : '中文';
-            document.getElementById('page-title').textContent = currentLang === 'zh' ? 'frps 部署脚本 - 使用文档' : 'frps Deploy Script - Documentation';
-            document.getElementById('doc-zh').style.display = currentLang === 'zh' ? 'block' : 'none';
-            document.getElementById('doc-en').style.display = currentLang === 'en' ? 'block' : 'none';
-        }
+  <h4 lang="zh">Q: 面板端口无法访问？</h4><h4 lang="en">Q: Panel port not accessible?</h4>
+  <pre><code># Linux (ufw)
+sudo ufw allow 7500
+# Linux (firewalld)
+sudo firewall-cmd --add-port=7500/tcp --permanent && sudo firewall-cmd --reload</code></pre>
 
-        updatePage();
-    </script>
+  <h4 lang="zh">Q: 如何升级？</h4><h4 lang="en">Q: How to upgrade?</h4>
+  <p lang="zh">Web 面板 → 在线升级（推荐），或重新下载最新二进制覆盖安装。</p>
+  <p lang="en">Web Panel → Online Upgrade (recommended), or re-download the latest binary.</p>
+
+  <h4 lang="zh">Q: Docker 如何查看日志？</h4><h4 lang="en">Q: How to view Docker logs?</h4>
+  <pre><code>docker logs -f frps-panel</code></pre>
+</section>
+
+<!-- FOOTER -->
+<div style="text-align:center;padding:40px 0;border-top:2px solid var(--border);margin-top:40px;color:var(--text-secondary);font-size:0.9em;">
+  <p>frps-panel v0.69.1_attychen &nbsp;|&nbsp; <span lang="zh">基于</span><span lang="en">Based on</span> <a href="https://github.com/fatedier/frp">fatedier/frp</a> &amp; <a href="https://github.com/xxl6097/go-frp-panel">go-frp-panel</a></p>
+  <p>MIT License &nbsp;|&nbsp; WeChat: attychen &nbsp;|&nbsp; <a href="https://github.com/attychen/immich-frps">GitHub</a></p>
+</div>
+
+</div>
+
+<script>
+function switchLang(lang) {
+  document.body.className = 'show-' + lang;
+  document.querySelectorAll('.lang-btn').forEach(function(b) {
+    b.classList.toggle('active', b.textContent.trim().startsWith(lang === 'zh' ? '中' : 'E'));
+  });
+  localStorage.setItem('frps-doc-lang', lang);
+}
+(function() {
+  var s = localStorage.getItem('frps-doc-lang');
+  if (s === 'en') switchLang('en');
+})();
+</script>
 </body>
 </html>
