@@ -48,7 +48,7 @@
 
 ## 🚀 各平台部署
 
-> 详细文档请访问 **[使用手册 (doc.html)](doc.html)**（支持中/English 切换）
+> 详细文档请访问 **[使用手册](https://attychen.github.io/immich-frps/doc.html)**（支持中/English 切换）
 
 ### Linux
 
@@ -113,7 +113,7 @@ docker run -d --name frps-panel --network host \
   acallsh/frps-panel:latest
 ```
 
-> 📖 完整安装指南、配置参数说明、API 文档 → **[doc.html](doc.html)**
+> 📖 完整安装指南、配置参数说明、API 文档 → **[使用手册](https://attychen.github.io/immich-frps/doc.html)**
 
 ---
 
