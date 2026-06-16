@@ -1,190 +1,149 @@
 <div align="center">
+  <img src="./static/images/logo.ico" alt="logo"/>
+  <h1 align="center">go-frp-panel</h1>
+</div>
+<div align="center">基于Frp开源代码打造的自定义配置管理📺、无需配置文件、自定义配置、在线自动升级、frpc多客户端运行管理，免去了配置文件的复杂操作，可实现『✨秒妙极安装体验🚀』</div>
+<br>
+<p align="center">
+  <a href="https://github.com/xxl6[pkg](pkg)097/go-frp-panel/releases/latest">
+    <img src="https://img.shields.io/github/v/release/xxl6097/go-frp-panel" />
+  </a>
+  <a href="https://github.com/xxl6097/go-frp-panel/releases/latest">
+    <img src="https://img.shields.io/github/downloads/xxl6097/go-frp-panel/total" />
+  </a>
+  <a href="https://github.com/xxl6097/go-frp-panel/fork">
+    <img src="https://img.shields.io/github/forks/xxl6097/go-frp-panel" />
+  </a>
+</p>
 
-# immich-frps — frps 智能部署与管理面板
 
-**一键部署 | Web 管理面板 | 智能优化引擎 | 大文件传输 | 监控仪表盘**
+- [✅ 特点](#特点)
+- [⚙️ 配置参数](#配置)
+- [🚀 快速上手](#快速上手)
+    - [Frps安装](#Frps服务端程序安装)
+    - [Frpc客户端程序安装](#Frpc客户端程序安装)
+    - [服务端界面](#frps主界面)
+    - [客户端界面](#frpc主界面)
+- [❤️ 赞赏](#赞赏)
+- [👀 关注(更新订阅+答疑交流)](#关注)
+- [📣 免责声明](#免责声明)
+- [⚖️ 许可证](#许可证)
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/attychen/immich-frps.svg)](https://github.com/attychen/immich-frps/stargazers)
-[![GitHub issues](https://img.shields.io/github/issues/attychen/immich-frps.svg)](https://github.com/attychen/immich-frps/issues)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/attychen/immich-frps/release.yml?branch=frps-panel)](https://github.com/attychen/immich-frps/actions)
+📍订阅源来自：
 
+- [fatedier/frp](https://github.com/fatedier/frp)
+## 特点
+
+- ✅ 程序以服务形式安装并运行，支持跨平台windows、linux、macos平台；
+- ✅ 新增重启功能，用户可管理后台操作重启；
+- ✅ 新增在线升级功能，可上传式升级和文件url式升级；
+- ✅ 新增可在管理后台端查看日志功能；
+- ✅ frps服务端可生成frpc客户端，密钥信息二进制内嵌在客户端程序中；
+- ✅ 新增用户配置，可以配置授权用户供frpc端使用
+- ✅ frpc客户端可运行多客户端
+- ✨ 新增frpc用户配置导入导出
+
+
+## 快速上手
+
+### Frps服务端程序安装
+
+
+#### 命令行
+
+```shell
+root@clife-fnos:~/files# chmod +x acfrps_0.5.44_linux_amd64 
+root@clife-fnos:~/files# ./acfrps_0.5.44_linux_amd64 install
+
+请输入Frps服务器绑定端口：6000
+请输入管理后台端口：7200
+请输入管理后台地址(默认0.0.0.0)：
+请输入管理后台用户名(admin)：admin
+请输入管理后台密码：xxxxx
+```
+
+#### frps主界面：
+
+<div align="center">
+  <img src="./static/images/panel.png" alt="panel"/>
 </div>
 
----
+升级界面：
+<div align="center">
+  <img src="./static/images/upgrade.png" alt="upgrade"/>
+</div>
 
-## 📋 项目简介
+配置界面：
+<div align="center">
+  <img src="./static/images/config.png" alt="config"/>
+</div>
 
-`immich-frps` 是一个集 **frps 一键部署** 与 **Web 可视化管理面板** 于一体的综合解决方案。基于 [fatedier/frp](https://github.com/fatedier/frp)，专为 Immich 等大文件传输场景深度优化。
+用户界面：
+<div align="center">
+  <img src="./static/images/user.png" alt="user"/>
+</div>
 
-### 🎯 两大核心组件
+### Frpc客户端程序安装
 
-| 组件 | 说明 |
-|------|------|
-| **deploy_frps.sh** | 交互式一键部署脚本，自动检测架构、自适应内存、动态调优网络参数 |
-| **frps-panel** | Web 可视化管理面板，实时监控、智能优化、带宽管理、防火墙配置 |
+首先在服务器端新增账户，然后生成客户端（需先在frps端上传客户端），如下图：
+生成客户端界面：
+<div align="center">
+  <img src="./static/images/gencls.png" alt="gencls"/>
+</div>
 
----
+如上如，生成客户端后，上传到电脑端运行，命令如下：
 
-## ✨ 功能特性
+```shell
+root@clife-fnos:~/files# chmod +x acfrpc_0.5.48_linux_amd64 
+root@clife-fnos:~/files# ./acfrpc_0.5.48_linux_amd64 install
+App Name:       acfrpc
+App Version:    0.5.48
+Build version:  v0.5.48
+Build time:     2025-02-27 Thursday 17:21:35
+Git revision:   059ac51
+Git branch:     tags/v0.5.47^0
+Golang Version: go version go1.23.2 darwin/arm64
+DisplayName:    AcFrpc网络代理程序_v0.5.48
+Description:    一款基于GO语言的网络代理服务程序
 
-### 🚀 一键部署脚本
-- ✅ 自动检测系统架构（amd64/arm64/armv7）
-- ✅ 自适应内存，动态调整网络参数
-- ✅ 交互式菜单界面，支持修改端口/用户名/密码
-- ✅ 100GB 大文件传输优化
-- ✅ 配置自动备份与恢复
-- ✅ 多服务器管理
-
-### 🖥️ Web 管理面板 (frps-panel)
-- 📊 **监控仪表盘** — 实时流量、连接数、CPU/内存监控
-- ⚡ **智能优化引擎** — 根据服务器配置自动计算最优 TCP 参数
-- 📡 **带宽管理器** — 限速、流量统计、带宽分配
-- 🛡️ **防火墙配置** — 可视化端口管理、IP 黑白名单
-- 🔧 **服务端配置** — 在线编辑 frps 配置，热重载
-- 🌐 **国际化** — 支持中文/英文切换
-- 📋 **诊断工具** — 系统诊断、网络检测、性能分析
-
----
-
-## 🚀 快速开始
-
-### 方式一：一键部署脚本
-
-```bash
-git clone https://github.com/attychen/immich-frps.git
-cd immich-frps
-bash deploy_frps.sh
+请输入管理后台端口：6400
+请输入管理后台用户名：admin
+请输入管理后台密码：xxxxxxx
 ```
 
-### 方式二：使用 Web 管理面板
+##### frpc主界面：
 
-```bash
-# 克隆项目
-git clone https://github.com/attychen/immich-frps.git
-cd immich-frps
+<div align="center">
+  <img src="./static/images/frpc-panel.png" alt="frpc-panel"/>
+</div>
 
-# 构建并运行（需要 Go 1.21+）
-cd go-frp-panel
-go build -o frps-panel ./cmd/server
-./frps-panel
+frpc创建多客户端：
 
-# 访问面板
-# http://your-server:7500
+<div align="center">
+  <img src="./static/images/create-frpc.png" alt="create-panel"/>
+</div>
+
+
+## 依赖库
+
+```shell
+go get -u github.com/xxl6097/go-service@v0.6.39
+go get -u github.com/xxl6097/glog@v0.1.35
 ```
+## 赞赏
 
-### 方式三：Docker 部署
+<div>开发维护不易，请我喝杯咖啡☕️吧~</div>
 
-```bash
-# frps 服务端
-docker run -d \
-  --name frps \
-  --network host \
-  -v /etc/frp:/etc/frp \
-  attychen/frps:latest-amd64
+| 支付宝                                  | 微信                                     |
+|--------------------------------------|----------------------------------------|
+| ![支付宝扫码](./static/images/alipay.png) | ![微信扫码](./static/images/wepay.png) |
 
-# frpc 客户端
-docker run -d \
-  --name frpc \
-  --network host \
-  -v /etc/frp:/etc/frp \
-  attychen/frpc:latest-amd64
-```
+## 关注
 
----
+## 免责声明
 
-## 📂 项目结构
+本项目仅供学习交流用途，核心功能来源于[fatedier/frp](https://github.com/fatedier/frp)，如有侵权，请联系删除
 
-```
-immich-frps/
-├── deploy_frps.sh          # 一键部署脚本（交互式）
-├── doc.html                # 使用文档
-├── Dockerfile.frps         # frps Docker 镜像
-├── Dockerfile.frpc         # frpc Docker 镜像
-├── go-frp-panel/           # Web 管理面板（Go + Vue3）
-│   ├── cmd/server/         # 面板服务入口
-│   ├── internal/
-│   │   ├── frps/           # frps 核心逻辑
-│   │   │   ├── admin_api.go
-│   │   │   ├── api.go
-│   │   │   ├── bandwidth.go
-│   │   │   ├── diagnostic_api.go
-│   │   │   ├── firewall.go
-│   │   │   └── optimize_api.go
-│   │   └── frpc/           # frpc 客户端逻辑
-│   ├── pkg/
-│   │   ├── diagnostic/     # 诊断工具
-│   │   ├── optimizer/      # 智能优化引擎
-│   │   └── utils/          # 工具函数
-│   └── web/frps/src/       # Vue3 前端
-│       ├── components/
-│       │   ├── OptimizePanel.vue    # 优化面板
-│       │   ├── MonitorDashboard.vue # 监控仪表盘
-│       │   ├── BandwidthManager.vue # 带宽管理
-│       │   ├── ServerConfigNew.vue  # 服务配置
-│       │   └── HelpDoc.vue          # 帮助文档
-│       └── locales/        # 国际化 (zh-CN / en-US)
-└── .github/workflows/      # CI/CD 自动构建
-```
-
----
-
-## 🔧 智能优化引擎
-
-面板内置智能优化引擎，根据服务器配置自动计算最优网络参数：
-
-| 传输场景 | 适用内存 | 连接池 | TCP 缓冲 |
-|----------|----------|--------|----------|
-| 1 GB 轻量 | ≤ 512MB | 100 | 4MB |
-| 5 GB 适中 | 1-2GB | 500 | 16MB |
-| 10 GB 推荐 | 2-4GB | 1000 | 32MB |
-| 50 GB 深度 | 4-8GB | 5000 | 128MB |
-| 100 GB 极限 | ≥ 8GB | 10000 | 256MB |
-
-优化项包括：TCP 缓冲区、连接池大小、SYN 队列、KeepAlive 参数、重试策略等。
-
----
-
-## 🌐 管理面板 API
-
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/api/optimize/profile` | GET | 获取系统信息与优化推荐 |
-| `/api/optimize/sysctl` | GET | 生成 sysctl 配置 |
-| `/api/optimize/apply` | POST | 一键应用优化 |
-| `/api/optimize/rollback` | POST | 回滚优化 |
-| `/api/bandwidth/status` | GET | 带宽状态 |
-| `/api/bandwidth/limit` | POST | 设置限速 |
-| `/api/firewall/rules` | GET | 防火墙规则 |
-| `/api/diagnostic/run` | POST | 运行诊断 |
-| `/api/restart` | POST | 重启服务 |
-
----
-
-## 📖 文档
-
-详细使用文档：[doc.html](doc.html)
-
----
-
-## 🤝 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
----
-
-## 📜 许可证
-
-MIT License - 详见 [LICENSE](LICENSE)
-
----
-
-## ⭐ Star History
-
-<a href="https://www.star-history.com/?type=date&repos=attychen%2Fimmich-frps">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=attychen/immich-frps&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=attychen/immich-frps&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=attychen/immich-frps&type=date&legend=top-left" />
- </picture>
-</a>
+## 许可证
+https://www.7ed.net/gitmirror/hub.html
+[MIT](./LICENSE) License &copy; 2024-PRESENT [xxl6097](https://github.com/xxl6097)

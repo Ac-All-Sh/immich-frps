@@ -1,100 +1,32 @@
-name: Build and Release frps/frpc
+name: Build and Release frps-panel
 
 on:
-  schedule:
-    - cron: '0 0 * * *'  # 每天 UTC 00:00 检查新版本
-  workflow_dispatch:  # 支持手动触发
+  push:
+    branches:
+      - frps-panel
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - 'doc.html'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '版本号 (留空自动生成)'
+        required: false
+        default: ''
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: attychen/frps-panel
 
 jobs:
-  check-version:
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.check.outputs.version }}
-      should_build: ${{ steps.check.outputs.should_build }}
-    steps:
-      - name: Check latest frp version
-        id: check
-        run: |
-          set +e
-          
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/fatedier/frp/releases/latest | grep '"tag_name"' | sed -E 's/.*"v([^"]+)".*/\1/')
-          echo "Latest version: $LATEST_VERSION"
-          
-          if [ -z "$LATEST_VERSION" ]; then
-            echo "Failed to get latest version"
-            echo "should_build=false" >> $GITHUB_OUTPUT
-            echo "version=" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          
-          RESPONSE=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/tags/v${LATEST_VERSION}")
-          
-          if echo "$RESPONSE" | grep -q '"tag_name"'; then
-            echo "Version $LATEST_VERSION already released"
-            echo "should_build=false" >> $GITHUB_OUTPUT
-          else
-            echo "New version found: $LATEST_VERSION"
-            echo "should_build=true" >> $GITHUB_OUTPUT
-          fi
-          
-          echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
-
-  download-binaries:
-    needs: check-version
-    if: needs.check-version.outputs.should_build == 'true'
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        arch: [amd64, arm64, arm]
-    
-    steps:
-      - name: Download frps binary
-        run: |
-          VERSION=${{ needs.check-version.outputs.version }}
-          ARCH=${{ matrix.arch }}
-          
-          echo "Downloading frps v${VERSION} for ${ARCH}..."
-          
-          # 下载 frps
-          curl -fsSL -o frps.tar.gz "https://github.com/fatedier/frp/releases/download/v${VERSION}/frp_${VERSION}_linux_${ARCH}.tar.gz"
-          tar -xzf frps.tar.gz
-          
-          # 重命名二进制文件
-          mv frp_${VERSION}_linux_${ARCH}/frps frps_linux_${ARCH}
-          mv frp_${VERSION}_linux_${ARCH}/frpc frpc_linux_${ARCH}
-          
-          # 添加执行权限
-          chmod +x frps_linux_${ARCH} frpc_linux_${ARCH}
-          
-          # 创建校验和
-          sha256sum frps_linux_${ARCH} frpc_linux_${ARCH} > checksums_${ARCH}.txt
-          
-          echo "Downloaded successfully:"
-          ls -la frps_linux_${ARCH} frpc_linux_${ARCH}
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: binaries-${{ matrix.arch }}
-          path: |
-            frps_linux_*
-            frpc_linux_*
-            checksums_*.txt
-
+  # ==================== 构建多架构 Docker 镜像 ====================
   build-docker:
-    needs: check-version
-    if: needs.check-version.outputs.should_build == 'true'
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - arch: amd64
-            platform: linux/amd64
-          - arch: arm64
-            platform: linux/arm64
-          - arch: arm
-            platform: linux/arm/v7
-    
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -111,127 +43,215 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Download binaries for Docker build
+      - name: Generate version tag
+        id: version
         run: |
-          VERSION=${{ needs.check-version.outputs.version }}
-          ARCH=${{ matrix.arch }}
-          
-          curl -fsSL -o frps.tar.gz "https://github.com/fatedier/frp/releases/download/v${VERSION}/frp_${VERSION}_linux_${ARCH}.tar.gz"
-          tar -xzf frps.tar.gz
-          
-          cp frp_${VERSION}_linux_${ARCH}/frps ./frps
-          cp frp_${VERSION}_linux_${ARCH}/frpc ./frpc
-          chmod +x ./frps ./frpc
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=$(date +'%Y.%m.%d')-${GITHUB_SHA::7}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
 
-      - name: Build and push frps
+      - name: Build and push frps-panel (multi-arch)
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.frps
-          platforms: ${{ matrix.platform }}
+          file: Dockerfile
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: |
-            attychen/frps:${{ needs.check-version.outputs.version }}-${{ matrix.arch }}
-            attychen/frps:latest-${{ matrix.arch }}
+            ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
+            ${{ env.IMAGE_NAME }}:latest
+          build-args: |
+            VERSION=${{ steps.version.outputs.version }}
+            BUILD_TIME=${{ github.event.repository.updated_at }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and push frpc
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile.frpc
-          platforms: ${{ matrix.platform }}
-          push: true
-          tags: |
-            attychen/frpc:${{ needs.check-version.outputs.version }}-${{ matrix.arch }}
-            attychen/frpc:latest-${{ matrix.arch }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  create-release:
-    needs: [check-version, download-binaries]
-    if: needs.check-version.outputs.should_build == 'true'
+  # ==================== 构建二进制离线包 ====================
+  build-binaries:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      packages: write
-    
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            goarch: amd64
+            goarm: ''
+          - arch: arm64
+            goarch: arm64
+            goarm: ''
+          - arch: armv7
+            goarch: arm
+            goarm: '7'
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Build Vue frontend
+        run: |
+          cd web/frps
+          npm install --force
+          npm run build
+
+      - name: Build Go backend
+        env:
+          GOOS: linux
+          GOARCH: ${{ matrix.goarch }}
+          GOARM: ${{ matrix.goarm }}
+        run: |
+          VERSION=$(date +'%Y.%m.%d')-${GITHUB_SHA::7}
+          BINARY="frps-panel_linux_${{ matrix.arch }}"
+
+          # 复制前端产物
+          mkdir -p web/frps/dist
+          cp -r web/frps/dist/* web/frps/dist/ 2>/dev/null || true
+
+          go build -trimpath -ldflags="-s -w \
+            -X github.com/xxl6097/go-frp-panel/pkg.AppVersion=${VERSION} \
+            -X github.com/xxl6097/go-frp-panel/pkg.BuildTime=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+            -o ${BINARY} ./cmd/server
+
+          chmod +x ${BINARY}
+          sha256sum ${BINARY} > ${BINARY}.sha256
+          echo "Built: ${BINARY}"
+          ls -lh ${BINARY}
+
+      - name: Package offline bundle
+        run: |
+          ARCH=${{ matrix.arch }}
+          BUNDLE="frps-panel_offline_linux_${ARCH}"
+
+          mkdir -p ${BUNDLE}
+          cp frps-panel_linux_${ARCH} ${BUNDLE}/frps-panel
+          cp frps.toml ${BUNDLE}/frps.toml
+          cp deploy_frps.sh ${BUNDLE}/deploy_frps.sh 2>/dev/null || true
+          cp README.md ${BUNDLE}/README.md 2>/dev/null || true
+          cp LICENSE ${BUNDLE}/LICENSE 2>/dev/null || true
+
+          cat > ${BUNDLE}/install.sh << 'INSTALL_EOF'
+          #!/bin/sh
+          set -e
+          BIN_DIR="/usr/local/bin"
+          CONFIG_DIR="/etc/frp"
+          echo "Installing frps-panel..."
+          mkdir -p ${BIN_DIR} ${CONFIG_DIR}
+          cp frps-panel ${BIN_DIR}/frps-panel
+          chmod +x ${BIN_DIR}/frps-panel
+          if [ ! -f ${CONFIG_DIR}/frps.toml ]; then
+            cp frps.toml ${CONFIG_DIR}/frps.toml
+          fi
+          echo "frps-panel installed successfully!"
+          echo "Run: frps-panel server -c ${CONFIG_DIR}/frps.toml"
+          INSTALL_EOF
+          chmod +x ${BUNDLE}/install.sh
+
+          tar -czf ${BUNDLE}.tar.gz ${BUNDLE}
+          sha256sum ${BUNDLE}.tar.gz > ${BUNDLE}.tar.gz.sha256
+          echo "Packaged: ${BUNDLE}.tar.gz"
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frps-panel-${{ matrix.arch }}
+          path: |
+            frps-panel_linux_${{ matrix.arch }}
+            frps-panel_linux_${{ matrix.arch }}.sha256
+            frps-panel_offline_linux_${{ matrix.arch }}.tar.gz
+            frps-panel_offline_linux_${{ matrix.arch }}.tar.gz.sha256
+
+  # ==================== 创建 GitHub Release ====================
+  create-release:
+    needs: [build-docker, build-binaries]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+          merge-multiple: true
 
-      - name: List artifacts
+      - name: Generate version tag
+        id: version
         run: |
-          find artifacts -type f | head -20
+          VERSION=$(date +'%Y.%m.%d')-${GITHUB_SHA::7}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ needs.check-version.outputs.version }}
-          name: frps/frpc v${{ needs.check-version.outputs.version }}
+          tag_name: v${{ steps.version.outputs.version }}
+          name: frps-panel v${{ steps.version.outputs.version }}
           body: |
-            ## frps/frpc v${{ needs.check-version.outputs.version }}
-            
-            ### Downloads
-            
-            | Architecture | frps | frpc | Checksums |
-            |-------------|------|------|-----------|
-            | amd64 | [frps_linux_amd64](https://github.com/${{ github.repository }}/releases/download/v${{ needs.check-version.outputs.version }}/frps_linux_amd64) | [frpc_linux_amd64](https://github.com/${{ github.repository }}/releases/download/v${{ needs.check-version.outputs.version }}/frpc_linux_amd64) | [checksums_amd64.txt](https://github.com/${{ github.repository }}/releases/download/v${{ needs.check-version.outputs.version }}/checksums_amd64.txt) |
-            | arm64 | [frps_linux_arm64](https://github.com/${{ github.repository }}/releases/download/v${{ needs.check-version.outputs.version }}/frps_linux_arm64) | [frpc_linux_arm64](https://github.com/${{ github.repository }}/releases/download/v${{ needs.check-version.outputs.version }}/frpc_linux_arm64) | [checksums_arm64.txt](https://github.com/${{ github.repository }}/releases/download/v${{ needs.check-version.outputs.version }}/checksums_arm64.txt) |
-            
-            ### Docker Images
-            
+            ## 🚀 frps-panel v${{ steps.version.outputs.version }}
+
+            frps Web 可视化管理面板，集成智能优化引擎、实时监控、带宽管理。
+
+            ### 🐳 Docker 部署（推荐）
+
             ```bash
-            # Docker Hub
-            docker pull attychen/frps:${{ needs.check-version.outputs.version }}-amd64
-            docker pull attychen/frpc:${{ needs.check-version.outputs.version }}-amd64
-            docker pull attychen/frps:${{ needs.check-version.outputs.version }}-arm64
-            docker pull attychen/frpc:${{ needs.check-version.outputs.version }}-arm64
-            docker pull attychen/frps:${{ needs.check-version.outputs.version }}-arm
-            docker pull attychen/frpc:${{ needs.check-version.outputs.version }}-arm
+            docker pull attychen/frps-panel:${{ steps.version.outputs.version }}
+            docker pull attychen/frps-panel:latest
+
+            # amd64
+            docker run -d --name frps-panel --network host \
+              -v /etc/frp:/etc/frp \
+              -v /var/log/frp:/var/log/frp \
+              attychen/frps-panel:latest
+
+            # arm64
+            docker run -d --name frps-panel --network host \
+              -v /etc/frp:/etc/frp \
+              -v /var/log/frp:/var/log/frp \
+              attychen/frps-panel:latest
             ```
-            
-            ### Quick Start
-            
+
+            ### 📦 离线包部署
+
             ```bash
-            # Download and install frps
-            curl -fsSL https://github.com/${{ github.repository }}/releases/download/v${{ needs.check-version.outputs.version }}/frps_linux_amd64 -o /usr/local/bin/frps
-            chmod +x /usr/local/bin/frps
-            
-            # Download and install frpc
-            curl -fsSL https://github.com/${{ github.repository }}/releases/download/v${{ needs.check-version.outputs.version }}/frpc_linux_amd64 -o /usr/local/bin/frpc
-            chmod +x /usr/local/bin/frpc
+            # amd64
+            wget https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/frps-panel_offline_linux_amd64.tar.gz
+            tar -xzf frps-panel_offline_linux_amd64.tar.gz
+            cd frps-panel_offline_linux_amd64 && bash install.sh
+
+            # arm64
+            wget https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/frps-panel_offline_linux_arm64.tar.gz
+            tar -xzf frps-panel_offline_linux_arm64.tar.gz
+            cd frps-panel_offline_linux_arm64 && bash install.sh
+
+            # armv7 (树莓派)
+            wget https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/frps-panel_offline_linux_armv7.tar.gz
+            tar -xzf frps-panel_offline_linux_armv7.tar.gz
+            cd frps-panel_offline_linux_armv7 && bash install.sh
             ```
-            
-            ### Author
-            
-            **[attychen](https://github.com/attychen)** • Original by [Ac.All.Sh](https://github.com/Ac-All-Sh)
+
+            ### ✨ 面板功能
+
+            | 功能 | 说明 |
+            |------|------|
+            | 📊 监控仪表盘 | 实时流量、连接数、CPU/内存 |
+            | ⚡ 智能优化 | 自动计算最优 TCP 参数 |
+            | 📡 带宽管理 | 限速、流量统计 |
+            | 🛡️ 防火墙 | IP 黑白名单 |
+            | 🌐 国际化 | 中文/English |
           files: |
-            artifacts/binaries-amd64/*
-            artifacts/binaries-arm64/*
+            artifacts/*
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Cleanup old releases
-        run: |
-          set +e
-          releases=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases?per_page=100" | grep '"tag_name"' | sed -E 's/.*"v([^"]+)".*/\1/' | tail -n +11)
-          for version in $releases; do
-            echo "Deleting release v${version}..."
-            curl -X DELETE \
-              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/${{ github.repository }}/releases/tags/v${version}" || true
-            curl -X DELETE \
-              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/${{ github.repository }}/git/refs/tags/v${version}" || true
-          done

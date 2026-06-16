@@ -1,0 +1,92 @@
+#name: "Build for ${{ github.ref_name }}  by ${{ github.actor }}"
+run-name: "${{ github.ref_name }}"
+#on:
+#  workflow_dispatch:
+on:
+  push:
+    tags:
+      - 'v[0-99]*.[0-99]*.[0-99]*'  # 匹配所有以 v 开头的标签（如 v1.0.0）
+env:
+  DELETE_RELEASE: yes
+jobs:
+  goreleaser:
+    #if: contains(github.event.head_commit.message, 'DEPLOY')  echo echo"github：${{ toJson(github) }}"
+    runs-on: ubuntu-latest
+    steps:
+      - name: 导出源码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Frps Web文件变动了
+        id: changed-frps-files         # 设置步骤ID，用于后续引用输出
+        uses: tj-actions/changed-files@v45
+        with:
+          files: "web/frps/**"         # 监控src目录下所有文件[1](@ref)
+          json: true              # 输出JSON格式（用于矩阵任务）[4](@ref)
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+      - name: 编译Frps Web
+        if: steps.changed-frps-files.outputs.any_changed == 'true'
+        run: |
+          cd ./web/frps
+          npm install
+          npm run build
+      - name: Frpc Web文件变动了
+        id: changed-frpc-files         # 设置步骤ID，用于后续引用输出
+        uses: tj-actions/changed-files@v45
+        with:
+          files: "web/frpc/**"         # 监控src目录下所有文件[1](@ref)
+          json: true              # 输出JSON格式（用于矩阵任务）[4](@ref)
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+      - name: 编译Frpc Web
+        if: steps.changed-frpc-files.outputs.any_changed == 'true'
+        run: |
+          cd ./web/frpc
+          npm install
+          npm run build
+      - name: 设置Golang版本
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+      - name: 编译Golang程序
+        run: |
+          chmod +x ./build.sh
+          ./build.sh github ${{ github.ref_name }}
+      - name: 下载上一个版本
+        continue-on-error: true  # 即使失败也不中断工作流
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download "$PREV_VERSION" \
+            --pattern "acfrp*" \
+            --dir pre_release_files
+          ls -lh pre_release_files
+      - name: 编译Golang差量包
+        run: |
+          echo "安装deffer工具"
+          if [ -e "./pre_release_files" ]; then
+              go install github.com/xxl6097/go-service/cmd/differ@latest
+              ./build.sh github ${{ github.ref_name }}
+              echo "前版本文件列表："
+              ls -lh ./pre_release_files
+              echo "当前编译产物列表："
+              ls -lh ./release/packages
+              echo "开始编译差量包 ${{ github.ref_name }}"
+              differ "./pre_release_files" "./release/packages" ${{ github.ref_name }}
+              echo "差量编译产物列表："
+              ls -lh ./release/packages
+          else
+              echo "./pre_release_files不存在"
+          fi
+      - name: 发布版本
+        uses: goreleaser/goreleaser-action@v5
+        with:
+          version: latest
+          args: release --clean --release-notes=./Release.md --skip=validate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
