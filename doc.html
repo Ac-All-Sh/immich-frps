@@ -48,9 +48,9 @@
   code { font-family: "SF Mono", "Fira Code", "Consolas", monospace; }
   :not(pre) > code { background: var(--code-bg); padding: 2px 6px; border-radius: 3px; font-size: 0.9em; color: #d63384; }
 
-  [lang] { display: none; }
-  body.show-zh [lang="zh"] { display: revert; }
-  body.show-en [lang="en"] { display: revert; }
+  .zh, .en { display: none; }
+  body.show-zh .zh { display: revert; }
+  body.show-en .en { display: revert; }
 
   @media (max-width: 768px) {
     .container { padding: 12px; }
@@ -69,143 +69,143 @@
 <div class="container">
 
 <div class="header">
-  <h1>frps-panel <span lang="zh">使用手册</span><span lang="en">User Manual</span></h1>
-  <div class="subtitle" lang="zh">frp 内网穿透可视化管理面板 — 全架构部署指南</div>
-  <div class="subtitle" lang="en">frp Visual Management Panel — Cross-Architecture Deployment Guide</div>
-  <div class="meta">Version: v0.69.1_attychen &nbsp;|&nbsp; <span lang="zh">作者</span><span lang="en">Author</span>: attychen &nbsp;|&nbsp; 2026</div>
+  <h1>frps-panel <span class="zh">使用手册</span><span class="en">User Manual</span></h1>
+  <div class="subtitle zh">frp 内网穿透可视化管理面板 �?全架构部署指�?/div>
+  <div class="subtitle en">frp Visual Management Panel �?Cross-Architecture Deployment Guide</div>
+  <div class="meta">Version: v0.69.1_attychen &nbsp;|&nbsp; <span class="zh">作�?/span><span class="en">Author</span>: attychen &nbsp;|&nbsp; 2026</div>
 </div>
 
 <div class="toc">
-  <h3 lang="zh">目录</h3><h3 lang="en">Table of Contents</h3>
+  <h3 class="zh">目录</h3><h3 class="en">Table of Contents</h3>
   <ol>
-    <li><a href="#overview"><span lang="zh">项目概述</span><span lang="en">Overview</span></a></li>
-    <li><a href="#arch"><span lang="zh">架构支持</span><span lang="en">Architecture Support</span></a></li>
-    <li><a href="#linux"><span lang="zh">Linux 部署</span><span lang="en">Linux Deployment</span></a></li>
-    <li><a href="#windows"><span lang="zh">Windows 部署</span><span lang="en">Windows Deployment</span></a></li>
-    <li><a href="#macos"><span lang="zh">macOS 部署</span><span lang="en">macOS Deployment</span></a></li>
-    <li><a href="#freebsd"><span lang="zh">FreeBSD 部署</span><span lang="en">FreeBSD Deployment</span></a></li>
-    <li><a href="#android"><span lang="zh">Android 部署</span><span lang="en">Android Deployment</span></a></li>
-    <li><a href="#docker"><span lang="zh">Docker 部署</span><span lang="en">Docker Deployment</span></a></li>
-    <li><a href="#frps-config"><span lang="zh">服务端配置</span><span lang="en">Server Configuration</span></a></li>
-    <li><a href="#frpc-config"><span lang="zh">客户端配置</span><span lang="en">Client Configuration</span></a></li>
-    <li><a href="#web-panel"><span lang="zh">Web 管理面板</span><span lang="en">Web Management Panel</span></a></li>
-    <li><a href="#api"><span lang="zh">API 参考</span><span lang="en">API Reference</span></a></li>
-    <li><a href="#faq"><span lang="zh">常见问题</span><span lang="en">FAQ</span></a></li>
+    <li><a href="#overview"><span class="zh">项目概述</span><span class="en">Overview</span></a></li>
+    <li><a href="#arch"><span class="zh">架构支持</span><span class="en">Architecture Support</span></a></li>
+    <li><a href="#linux"><span class="zh">Linux 部署</span><span class="en">Linux Deployment</span></a></li>
+    <li><a href="#windows"><span class="zh">Windows 部署</span><span class="en">Windows Deployment</span></a></li>
+    <li><a href="#macos"><span class="zh">macOS 部署</span><span class="en">macOS Deployment</span></a></li>
+    <li><a href="#freebsd"><span class="zh">FreeBSD 部署</span><span class="en">FreeBSD Deployment</span></a></li>
+    <li><a href="#android"><span class="zh">Android 部署</span><span class="en">Android Deployment</span></a></li>
+    <li><a href="#docker"><span class="zh">Docker 部署</span><span class="en">Docker Deployment</span></a></li>
+    <li><a href="#frps-config"><span class="zh">服务端配�?/span><span class="en">Server Configuration</span></a></li>
+    <li><a href="#frpc-config"><span class="zh">客户端配�?/span><span class="en">Client Configuration</span></a></li>
+    <li><a href="#web-panel"><span class="zh">Web 管理面板</span><span class="en">Web Management Panel</span></a></li>
+    <li><a href="#api"><span class="zh">API 参�?/span><span class="en">API Reference</span></a></li>
+    <li><a href="#faq"><span class="zh">常见问题</span><span class="en">FAQ</span></a></li>
   </ol>
 </div>
 
-<!-- ═══════════════ 1. OVERVIEW ═══════════════ -->
+<!-- ══════════════�?1. OVERVIEW ══════════════�?-->
 <section id="overview">
-  <h2>1. <span lang="zh">项目概述</span><span lang="en">Overview</span></h2>
-  <p lang="zh"><strong>frps-panel</strong> 是基于 <a href="https://github.com/fatedier/frp">fatedier/frp</a> 二次开发的 frp 内网穿透可视化管理面板。提供 frps 服务端与 frpc 客户端的 Web 管理界面，支持 <strong>16 种 CPU 架构</strong>，免配置文件，一键安装。适用于 Immich 照片同步等大文件传输场景的深度优化。</p>
-  <p lang="en"><strong>frps-panel</strong> is a visual management panel for frp, forked from <a href="https://github.com/fatedier/frp">fatedier/frp</a>. It provides Web-based management for both frps server and frpc client, supporting <strong>16 CPU architectures</strong> with one-click installation. Deeply optimized for large file transfer scenarios such as Immich photo sync.</p>
+  <h2>1. <span class="zh">项目概述</span><span class="en">Overview</span></h2>
+  <p class="zh"><strong>frps-panel</strong> 是基�?<a href="https://github.com/fatedier/frp">fatedier/frp</a> 二次开发的 frp 内网穿透可视化管理面板。提�?frps 服务端与 frpc 客户端的 Web 管理界面，支�?<strong>16 �?CPU 架构</strong>，免配置文件，一键安装。适用�?Immich 照片同步等大文件传输场景的深度优化�?/p>
+  <p class="en"><strong>frps-panel</strong> is a visual management panel for frp, forked from <a href="https://github.com/fatedier/frp">fatedier/frp</a>. It provides Web-based management for both frps server and frpc client, supporting <strong>16 CPU architectures</strong> with one-click installation. Deeply optimized for large file transfer scenarios such as Immich photo sync.</p>
   <div class="info-card">
-    <strong lang="zh">核心特性</strong><strong lang="en">Key Features</strong>
-    <p lang="zh">📊 监控仪表盘 &nbsp;·&nbsp; ⚡ 智能优化引擎 &nbsp;·&nbsp; 📡 带宽管理 &nbsp;·&nbsp; 🛡️ 防火墙 &nbsp;·&nbsp; 🔄 在线升级 &nbsp;·&nbsp; 🌐 国际化 (中/英)</p>
-    <p lang="en">📊 Monitor Dashboard &nbsp;·&nbsp; ⚡ Optimization Engine &nbsp;·&nbsp; 📡 Bandwidth Manager &nbsp;·&nbsp; 🛡️ Firewall &nbsp;·&nbsp; 🔄 Online Upgrade &nbsp;·&nbsp; 🌐 i18n (ZH/EN)</p>
+    <strong class="zh">核心特�?/strong><strong class="en">Key Features</strong>
+    <p class="zh">📊 监控仪表�?&nbsp;·&nbsp; �?智能优化引擎 &nbsp;·&nbsp; 📡 带宽管理 &nbsp;·&nbsp; 🛡�?防火�?&nbsp;·&nbsp; 🔄 在线升级 &nbsp;·&nbsp; 🌐 国际�?(�?�?</p>
+    <p class="en">📊 Monitor Dashboard &nbsp;·&nbsp; �?Optimization Engine &nbsp;·&nbsp; 📡 Bandwidth Manager &nbsp;·&nbsp; 🛡�?Firewall &nbsp;·&nbsp; 🔄 Online Upgrade &nbsp;·&nbsp; 🌐 i18n (ZH/EN)</p>
   </div>
 </section>
 
-<!-- ═══════════════ 2. ARCH ═══════════════ -->
+<!-- ══════════════�?2. ARCH ══════════════�?-->
 <section id="arch">
-  <h2>2. <span lang="zh">架构支持</span><span lang="en">Architecture Support</span></h2>
+  <h2>2. <span class="zh">架构支持</span><span class="en">Architecture Support</span></h2>
   <table>
-    <thead><tr><th lang="zh">操作系统</th><th lang="en">OS</th><th lang="zh">架构</th><th lang="en">Arch</th><th lang="zh">典型设备</th><th lang="en">Typical Device</th></tr></thead>
+    <thead><tr><th class="zh">操作系统</th><th class="en">OS</th><th class="zh">架构</th><th class="en">Arch</th><th class="zh">典型设备</th><th class="en">Typical Device</th></tr></thead>
     <tbody>
-      <tr><td rowspan="10">Linux</td><td>amd64</td><td lang="zh">x86_64 服务器</td><td lang="en">x86_64 Server</td></tr>
-      <tr><td>arm64</td><td lang="zh">树莓派 4/5</td><td lang="en">Raspberry Pi 4/5</td></tr>
-      <tr><td>arm (v5)</td><td lang="zh">老旧 ARM</td><td lang="en">Legacy ARM</td></tr>
-      <tr><td>armhf (v7)</td><td lang="zh">树莓派 2/3</td><td lang="en">Raspberry Pi 2/3</td></tr>
-      <tr><td>mips64</td><td lang="zh">龙芯 3A/3B (大端)</td><td lang="en">Loongson 3A/3B (BE)</td></tr>
-      <tr><td>mips64le</td><td lang="zh">龙芯 3A/3B (小端)</td><td lang="en">Loongson 3A/3B (LE)</td></tr>
-      <tr><td>mips (softfloat)</td><td lang="zh">路由器 MT7621</td><td lang="en">Router MT7621</td></tr>
-      <tr><td>mipsle (softfloat)</td><td lang="zh">路由器 (小端)</td><td lang="en">Router (LE)</td></tr>
-      <tr><td>riscv64</td><td lang="zh">昉·星光 / SiFive</td><td lang="en">VisionFive / SiFive</td></tr>
-      <tr><td>loong64</td><td lang="zh">龙芯 3A6000</td><td lang="en">Loongson 3A6000</td></tr>
-      <tr><td rowspan="2">Windows</td><td>amd64</td><td lang="zh">绝大多数 PC</td><td lang="en">Most PCs</td></tr>
-      <tr><td>arm64</td><td lang="zh">Surface Pro X</td><td lang="en">Surface Pro X</td></tr>
-      <tr><td rowspan="2">macOS</td><td>amd64</td><td lang="zh">Intel Mac</td><td lang="en">Intel Mac</td></tr>
-      <tr><td>arm64</td><td lang="zh">Apple Silicon (M1-M3)</td><td lang="en">Apple Silicon (M1-M3)</td></tr>
-      <tr><td>FreeBSD</td><td>amd64</td><td lang="zh">FreeBSD 服务器</td><td lang="en">FreeBSD Server</td></tr>
-      <tr><td>Android</td><td>arm64</td><td lang="zh">Termux 环境</td><td lang="en">Termux Environment</td></tr>
-      <tr><td rowspan="3">Docker</td><td>amd64</td><td colspan="2" lang="zh">多架构 Docker 镜像</td></tr>
-      <tr><td>arm64</td><td colspan="2" lang="en">Multi-Arch Docker Image</td></tr>
+      <tr><td rowspan="10">Linux</td><td>amd64</td><td class="zh">x86_64 服务�?/td><td class="en">x86_64 Server</td></tr>
+      <tr><td>arm64</td><td class="zh">树莓�?4/5</td><td class="en">Raspberry Pi 4/5</td></tr>
+      <tr><td>arm (v5)</td><td class="zh">老旧 ARM</td><td class="en">Legacy ARM</td></tr>
+      <tr><td>armhf (v7)</td><td class="zh">树莓�?2/3</td><td class="en">Raspberry Pi 2/3</td></tr>
+      <tr><td>mips64</td><td class="zh">龙芯 3A/3B (大端)</td><td class="en">Loongson 3A/3B (BE)</td></tr>
+      <tr><td>mips64le</td><td class="zh">龙芯 3A/3B (小端)</td><td class="en">Loongson 3A/3B (LE)</td></tr>
+      <tr><td>mips (softfloat)</td><td class="zh">路由�?MT7621</td><td class="en">Router MT7621</td></tr>
+      <tr><td>mipsle (softfloat)</td><td class="zh">路由�?(小端)</td><td class="en">Router (LE)</td></tr>
+      <tr><td>riscv64</td><td class="zh">昉·星�?/ SiFive</td><td class="en">VisionFive / SiFive</td></tr>
+      <tr><td>loong64</td><td class="zh">龙芯 3A6000</td><td class="en">Loongson 3A6000</td></tr>
+      <tr><td rowspan="2">Windows</td><td>amd64</td><td class="zh">绝大多数 PC</td><td class="en">Most PCs</td></tr>
+      <tr><td>arm64</td><td class="zh">Surface Pro X</td><td class="en">Surface Pro X</td></tr>
+      <tr><td rowspan="2">macOS</td><td>amd64</td><td class="zh">Intel Mac</td><td class="en">Intel Mac</td></tr>
+      <tr><td>arm64</td><td class="zh">Apple Silicon (M1-M3)</td><td class="en">Apple Silicon (M1-M3)</td></tr>
+      <tr><td>FreeBSD</td><td>amd64</td><td class="zh">FreeBSD 服务�?/td><td class="en">FreeBSD Server</td></tr>
+      <tr><td>Android</td><td>arm64</td><td class="zh">Termux 环境</td><td class="en">Termux Environment</td></tr>
+      <tr><td rowspan="3">Docker</td><td>amd64</td><td colspan="2" class="zh">多架�?Docker 镜像</td></tr>
+      <tr><td>arm64</td><td colspan="2" class="en">Multi-Arch Docker Image</td></tr>
       <tr><td>arm/v7</td><td colspan="2"></td></tr>
     </tbody>
   </table>
-  <p lang="zh"><strong>命名规则：</strong> <code>acfrps_v{版本}_attychen_{系统}_{架构}[.exe]</code>。如 <code>acfrps_v0.69.1_attychen_linux_amd64</code>。</p>
-  <p lang="en"><strong>Naming:</strong> <code>acfrps_v{version}_attychen_{os}_{arch}[.exe]</code>. E.g. <code>acfrps_v0.69.1_attychen_linux_amd64</code>.</p>
+  <p class="zh"><strong>命名规则�?/strong> <code>acfrps_v{版本}_attychen_{系统}_{架构}[.exe]</code>。如 <code>acfrps_v0.69.1_attychen_linux_amd64</code>�?/p>
+  <p class="en"><strong>Naming:</strong> <code>acfrps_v{version}_attychen_{os}_{arch}[.exe]</code>. E.g. <code>acfrps_v0.69.1_attychen_linux_amd64</code>.</p>
 </section>
 
-<!-- ═══════════════ 3. LINUX ═══════════════ -->
+<!-- ══════════════�?3. LINUX ══════════════�?-->
 <section id="linux">
-  <h2>3. <span lang="zh">Linux 部署</span><span lang="en">Linux Deployment</span></h2>
-  <h3>3.1 <span lang="zh">通用安装步骤</span><span lang="en">General Steps</span></h3>
-  <p lang="zh">从 <a href="https://github.com/attychen/immich-frps/releases">Releases</a> 下载对应架构的二进制文件，赋予执行权限后安装为系统服务。</p>
-  <p lang="en">Download the binary for your architecture from <a href="https://github.com/attychen/immich-frps/releases">Releases</a>, grant execute permission, and install as a system service.</p>
-  <pre><code># <span lang="zh">下载并安装 (以 amd64 为例)</span><span lang="en">Download &amp; install (amd64 example)</span>
+  <h2>3. <span class="zh">Linux 部署</span><span class="en">Linux Deployment</span></h2>
+  <h3>3.1 <span class="zh">通用安装步骤</span><span class="en">General Steps</span></h3>
+  <p class="zh">�?<a href="https://github.com/attychen/immich-frps/releases">Releases</a> 下载对应架构的二进制文件，赋予执行权限后安装为系统服务�?/p>
+  <p class="en">Download the binary for your architecture from <a href="https://github.com/attychen/immich-frps/releases">Releases</a>, grant execute permission, and install as a system service.</p>
+  <pre><code># <span class="zh">下载并安�?(�?amd64 为例)</span><span class="en">Download &amp; install (amd64 example)</span>
 wget https://github.com/attychen/immich-frps/releases/latest/download/acfrps_v0.69.1_attychen_linux_amd64
 chmod +x acfrps_v0.69.1_attychen_linux_amd64
 sudo ./acfrps_v0.69.1_attychen_linux_amd64 install</code></pre>
-  <p lang="zh">安装程序将交互式提示输入：绑定端口 → 管理后台端口 → 后台地址 → 用户名 → 密码。</p>
-  <p lang="en">The installer will interactively prompt for: bind port → dashboard port → dashboard address → username → password.</p>
+  <p class="zh">安装程序将交互式提示输入：绑定端�?�?管理后台端口 �?后台地址 �?用户�?�?密码�?/p>
+  <p class="en">The installer will interactively prompt for: bind port �?dashboard port �?dashboard address �?username �?password.</p>
 
-  <h3>3.2 <span lang="zh">各架构专项说明</span><span lang="en">Architecture Notes</span></h3>
+  <h3>3.2 <span class="zh">各架构专项说�?/span><span class="en">Architecture Notes</span></h3>
 
   <h4>amd64</h4>
-  <p lang="zh">适用绝大多数 x86_64 Linux 服务器，无需额外依赖。</p>
-  <p lang="en">For most x86_64 Linux servers. No extra dependencies.</p>
+  <p class="zh">适用绝大多数 x86_64 Linux 服务器，无需额外依赖�?/p>
+  <p class="en">For most x86_64 Linux servers. No extra dependencies.</p>
 
-  <h4>arm64 <span lang="zh">（AArch64）</span></h4>
-  <p lang="zh">适用树莓派 4/5、Orange Pi 5、AWS Graviton 等 ARM 64 位设备。</p>
-  <p lang="en">For Raspberry Pi 4/5, Orange Pi 5, AWS Graviton, and other ARM 64-bit devices.</p>
+  <h4>arm64 <span class="zh">（AArch64�?/span></h4>
+  <p class="zh">适用树莓�?4/5、Orange Pi 5、AWS Graviton �?ARM 64 位设备�?/p>
+  <p class="en">For Raspberry Pi 4/5, Orange Pi 5, AWS Graviton, and other ARM 64-bit devices.</p>
 
   <h4>arm (v5) / armhf (v7)</h4>
-  <p lang="zh"><strong>armhf (v7)</strong> 适用树莓派 2/3 等支持硬件浮点的设备；<strong>arm (v5)</strong> 适用老旧 ARM 设备。</p>
-  <p lang="en"><strong>armhf (v7)</strong> for Raspberry Pi 2/3 and devices with hardware FP. <strong>arm (v5)</strong> for legacy ARM.</p>
+  <p class="zh"><strong>armhf (v7)</strong> 适用树莓�?2/3 等支持硬件浮点的设备�?strong>arm (v5)</strong> 适用老旧 ARM 设备�?/p>
+  <p class="en"><strong>armhf (v7)</strong> for Raspberry Pi 2/3 and devices with hardware FP. <strong>arm (v5)</strong> for legacy ARM.</p>
   <pre><code># armhf (v7)
 wget https://github.com/attychen/immich-frps/releases/latest/download/acfrps_v0.69.1_attychen_linux_armhf
 chmod +x acfrps_v0.69.1_attychen_linux_armhf
 sudo ./acfrps_v0.69.1_attychen_linux_armhf install</code></pre>
 
-  <h4>mips / mipsle <span lang="zh">（路由器）</span></h4>
-  <p lang="zh">适用 MT7621、MT7620 等 MIPS 架构路由器（软浮点）。需已刷 OpenWrt/Padavan 且存储空间充足。<strong>注意：</strong>mipsle（小端）更为常见。</p>
-  <p lang="en">For MT7621, MT7620 MIPS routers (soft-float). Requires OpenWrt/Padavan with sufficient storage. <strong>Note:</strong> mipsle (little-endian) is more common.</p>
-  <pre><code># mipsle (<span lang="zh">小端，推荐</span><span lang="en">little-endian, recommended</span>)
+  <h4>mips / mipsle <span class="zh">（路由器�?/span></h4>
+  <p class="zh">适用 MT7621、MT7620 �?MIPS 架构路由器（软浮点）。需已刷 OpenWrt/Padavan 且存储空间充足�?strong>注意�?/strong>mipsle（小端）更为常见�?/p>
+  <p class="en">For MT7621, MT7620 MIPS routers (soft-float). Requires OpenWrt/Padavan with sufficient storage. <strong>Note:</strong> mipsle (little-endian) is more common.</p>
+  <pre><code># mipsle (<span class="zh">小端，推�?/span><span class="en">little-endian, recommended</span>)
 wget https://github.com/attychen/immich-frps/releases/latest/download/acfrps_v0.69.1_attychen_linux_mipsle
 chmod +x acfrps_v0.69.1_attychen_linux_mipsle
 ./acfrps_v0.69.1_attychen_linux_mipsle install</code></pre>
 
-  <h4>mips64 / mips64le <span lang="zh">（龙芯 3A/3B）</span></h4>
-  <p lang="zh">适用龙芯 3A/3B 处理器。请根据系统字节序选择：<code>mips64</code> 大端，<code>mips64le</code> 小端。</p>
-  <p lang="en">For Loongson 3A/3B. Choose based on endianness: <code>mips64</code> = BE, <code>mips64le</code> = LE.</p>
+  <h4>mips64 / mips64le <span class="zh">（龙�?3A/3B�?/span></h4>
+  <p class="zh">适用龙芯 3A/3B 处理器。请根据系统字节序选择�?code>mips64</code> 大端�?code>mips64le</code> 小端�?/p>
+  <p class="en">For Loongson 3A/3B. Choose based on endianness: <code>mips64</code> = BE, <code>mips64le</code> = LE.</p>
 
   <h4>riscv64</h4>
-  <p lang="zh">适用 RISC-V 64 位开发板（昉·星光、SiFive HiFive 等）。</p>
-  <p lang="en">For RISC-V 64-bit boards (VisionFive, SiFive HiFive, etc.).</p>
+  <p class="zh">适用 RISC-V 64 位开发板（昉·星光、SiFive HiFive 等）�?/p>
+  <p class="en">For RISC-V 64-bit boards (VisionFive, SiFive HiFive, etc.).</p>
 
-  <h4>loong64 <span lang="zh">（龙芯 LoongArch）</span></h4>
-  <p lang="zh">适用龙芯 3A6000 等 LoongArch 架构处理器。<strong>注意：</strong>这是龙芯自主指令集，非 MIPS。</p>
-  <p lang="en">For Loongson 3A6000 and newer LoongArch processors. <strong>Note:</strong> This is Loongson's own ISA, not MIPS.</p>
+  <h4>loong64 <span class="zh">（龙�?LoongArch�?/span></h4>
+  <p class="zh">适用龙芯 3A6000 �?LoongArch 架构处理器�?strong>注意�?/strong>这是龙芯自主指令集，�?MIPS�?/p>
+  <p class="en">For Loongson 3A6000 and newer LoongArch processors. <strong>Note:</strong> This is Loongson's own ISA, not MIPS.</p>
 
-  <h3>3.3 <span lang="zh">服务管理命令</span><span lang="en">Service Commands</span></h3>
+  <h3>3.3 <span class="zh">服务管理命令</span><span class="en">Service Commands</span></h3>
   <table>
-    <tr><th lang="zh">命令</th><th lang="en">Command</th><th lang="zh">说明</th><th lang="en">Description</th></tr>
-    <tr><td><code>install</code></td><td lang="zh">安装为系统服务</td><td lang="en">Install as system service</td></tr>
-    <tr><td><code>uninstall</code></td><td lang="zh">卸载服务</td><td lang="en">Uninstall service</td></tr>
-    <tr><td><code>start</code></td><td lang="zh">启动服务</td><td lang="en">Start service</td></tr>
-    <tr><td><code>stop</code></td><td lang="zh">停止服务</td><td lang="en">Stop service</td></tr>
-    <tr><td><code>restart</code></td><td lang="zh">重启服务</td><td lang="en">Restart service</td></tr>
-    <tr><td><code>status</code></td><td lang="zh">查看状态</td><td lang="en">Check status</td></tr>
+    <tr><th class="zh">命令</th><th class="en">Command</th><th class="zh">说明</th><th class="en">Description</th></tr>
+    <tr><td><code>install</code></td><td class="zh">安装为系统服�?/td><td class="en">Install as system service</td></tr>
+    <tr><td><code>uninstall</code></td><td class="zh">卸载服务</td><td class="en">Uninstall service</td></tr>
+    <tr><td><code>start</code></td><td class="zh">启动服务</td><td class="en">Start service</td></tr>
+    <tr><td><code>stop</code></td><td class="zh">停止服务</td><td class="en">Stop service</td></tr>
+    <tr><td><code>restart</code></td><td class="zh">重启服务</td><td class="en">Restart service</td></tr>
+    <tr><td><code>status</code></td><td class="zh">查看状�?/td><td class="en">Check status</td></tr>
   </table>
 </section>
 
-<!-- ═══════════════ 4. WINDOWS ═══════════════ -->
+<!-- ══════════════�?4. WINDOWS ══════════════�?-->
 <section id="windows">
-  <h2>4. <span lang="zh">Windows 部署</span><span lang="en">Windows Deployment</span></h2>
+  <h2>4. <span class="zh">Windows 部署</span><span class="en">Windows Deployment</span></h2>
   <div class="warn-card">
-    <p lang="zh">必须以<strong>管理员身份</strong>运行 PowerShell 或 CMD，否则无法注册系统服务。</p>
-    <p lang="en">Must run PowerShell or CMD as <strong>Administrator</strong> to register the system service.</p>
+    <p class="zh">必须�?strong>管理员身�?/strong>运行 PowerShell �?CMD，否则无法注册系统服务�?/p>
+    <p class="en">Must run PowerShell or CMD as <strong>Administrator</strong> to register the system service.</p>
   </div>
   <h4>amd64</h4>
   <pre><code>.\acfrps_v0.69.1_attychen_windows_amd64.exe install</code></pre>
@@ -213,12 +213,12 @@ chmod +x acfrps_v0.69.1_attychen_linux_mipsle
   <pre><code>.\acfrps_v0.69.1_attychen_windows_arm64.exe install</code></pre>
 </section>
 
-<!-- ═══════════════ 5. macOS ═══════════════ -->
+<!-- ══════════════�?5. macOS ══════════════�?-->
 <section id="macos">
-  <h2>5. <span lang="zh">macOS 部署</span><span lang="en">macOS Deployment</span></h2>
+  <h2>5. <span class="zh">macOS 部署</span><span class="en">macOS Deployment</span></h2>
   <div class="warn-card">
-    <p lang="zh">首次运行可能被 Gatekeeper 拦截，请在 <strong>系统设置 → 隐私与安全性</strong> 中允许。</p>
-    <p lang="en">Gatekeeper may block first run. Allow in <strong>System Settings → Privacy & Security</strong>.</p>
+    <p class="zh">首次运行可能�?Gatekeeper 拦截，请�?<strong>系统设置 �?隐私与安全�?/strong> 中允许�?/p>
+    <p class="en">Gatekeeper may block first run. Allow in <strong>System Settings �?Privacy & Security</strong>.</p>
   </div>
   <h4>Intel (amd64)</h4>
   <pre><code>curl -LO https://github.com/attychen/immich-frps/releases/latest/download/acfrps_v0.69.1_attychen_darwin_amd64
@@ -230,41 +230,41 @@ chmod +x acfrps_v0.69.1_attychen_darwin_arm64
 sudo ./acfrps_v0.69.1_attychen_darwin_arm64 install</code></pre>
 </section>
 
-<!-- ═══════════════ 6. FREEBSD ═══════════════ -->
+<!-- ══════════════�?6. FREEBSD ══════════════�?-->
 <section id="freebsd">
-  <h2>6. <span lang="zh">FreeBSD 部署</span><span lang="en">FreeBSD Deployment</span></h2>
+  <h2>6. <span class="zh">FreeBSD 部署</span><span class="en">FreeBSD Deployment</span></h2>
   <pre><code>fetch https://github.com/attychen/immich-frps/releases/latest/download/acfrps_v0.69.1_attychen_freebsd_amd64
 chmod +x acfrps_v0.69.1_attychen_freebsd_amd64
 ./acfrps_v0.69.1_attychen_freebsd_amd64 install</code></pre>
 </section>
 
-<!-- ═══════════════ 7. ANDROID ═══════════════ -->
+<!-- ══════════════�?7. ANDROID ══════════════�?-->
 <section id="android">
-  <h2>7. <span lang="zh">Android 部署 (Termux)</span><span lang="en">Android Deployment (Termux)</span></h2>
+  <h2>7. <span class="zh">Android 部署 (Termux)</span><span class="en">Android Deployment (Termux)</span></h2>
   <div class="warn-card">
-    <p lang="zh">需要先安装 <a href="https://termux.dev/">Termux</a> 终端模拟器。</p>
-    <p lang="en">Requires <a href="https://termux.dev/">Termux</a> terminal emulator installed first.</p>
+    <p class="zh">需要先安装 <a href="https://termux.dev/">Termux</a> 终端模拟器�?/p>
+    <p class="en">Requires <a href="https://termux.dev/">Termux</a> terminal emulator installed first.</p>
   </div>
-  <pre><code># <span lang="zh">在 Termux 中执行</span><span lang="en">Run in Termux</span>
+  <pre><code># <span class="zh">�?Termux 中执�?/span><span class="en">Run in Termux</span>
 pkg install wget -y
 wget https://github.com/attychen/immich-frps/releases/latest/download/acfrps_v0.69.1_attychen_android_arm64
 chmod +x acfrps_v0.69.1_attychen_android_arm64
 ./acfrps_v0.69.1_attychen_android_arm64 install</code></pre>
 </section>
 
-<!-- ═══════════════ 8. DOCKER ═══════════════ -->
+<!-- ══════════════�?8. DOCKER ══════════════�?-->
 <section id="docker">
-  <h2>8. <span lang="zh">Docker 部署</span><span lang="en">Docker Deployment</span></h2>
-  <p lang="zh">支持：<code>linux/amd64</code> &bull; <code>linux/arm64</code> &bull; <code>linux/arm/v7</code></p>
-  <p lang="en">Supports: <code>linux/amd64</code> &bull; <code>linux/arm64</code> &bull; <code>linux/arm/v7</code></p>
+  <h2>8. <span class="zh">Docker 部署</span><span class="en">Docker Deployment</span></h2>
+  <p class="zh">支持�?code>linux/amd64</code> &bull; <code>linux/arm64</code> &bull; <code>linux/arm/v7</code></p>
+  <p class="en">Supports: <code>linux/amd64</code> &bull; <code>linux/arm64</code> &bull; <code>linux/arm/v7</code></p>
 
   <h4>docker run</h4>
-  <pre><code># <span lang="zh">host 网络模式 (推荐)</span><span lang="en">host network mode (recommended)</span>
+  <pre><code># <span class="zh">host 网络模式 (推荐)</span><span class="en">host network mode (recommended)</span>
 docker run -d --name frps-panel --network host --restart unless-stopped \
   -v /etc/frp:/etc/frp -v /var/log/frp:/var/log/frp \
   acallsh/frps-panel:latest
 
-# <span lang="zh">桥接模式</span><span lang="en">bridge mode</span>
+# <span class="zh">桥接模式</span><span class="en">bridge mode</span>
 docker run -d --name frps-panel --restart unless-stopped \
   -p 7000:7000 -p 7500:7500 -p 8080:8080 \
   -v /etc/frp:/etc/frp acallsh/frps-panel:latest</code></pre>
@@ -282,11 +282,11 @@ services:
       - /var/log/frp:/var/log/frp</code></pre>
 </section>
 
-<!-- ═══════════════ 9. FRPS CONFIG ═══════════════ -->
+<!-- ══════════════�?9. FRPS CONFIG ══════════════�?-->
 <section id="frps-config">
-  <h2>9. <span lang="zh">服务端配置</span><span lang="en">Server Configuration</span></h2>
-  <p lang="zh">配置文件 <code>/etc/frp/frps.toml</code>，可通过 Web 面板在线修改或直接编辑。</p>
-  <p lang="en">Config file: <code>/etc/frp/frps.toml</code>. Editable via Web panel or directly.</p>
+  <h2>9. <span class="zh">服务端配�?/span><span class="en">Server Configuration</span></h2>
+  <p class="zh">配置文件 <code>/etc/frp/frps.toml</code>，可通过 Web 面板在线修改或直接编辑�?/p>
+  <p class="en">Config file: <code>/etc/frp/frps.toml</code>. Editable via Web panel or directly.</p>
   <pre><code>bindPort = 7000
 auth.token = "your_secure_token"
 
@@ -299,85 +299,85 @@ vhostHTTPPort = 8080
 vhostHTTPSPort = 8443</code></pre>
 </section>
 
-<!-- ═══════════════ 10. FRPC CONFIG ═══════════════ -->
+<!-- ══════════════�?10. FRPC CONFIG ══════════════�?-->
 <section id="frpc-config">
-  <h2>10. <span lang="zh">客户端配置</span><span lang="en">Client Configuration</span></h2>
-  <p lang="zh">frpc 客户端需在 frps Web 面板中生成，二进制内嵌认证密钥，无需手动配置 token。</p>
-  <p lang="en">frpc clients are generated via the frps Web panel. The binary embeds the auth key — no manual token needed.</p>
+  <h2>10. <span class="zh">客户端配�?/span><span class="en">Client Configuration</span></h2>
+  <p class="zh">frpc 客户端需�?frps Web 面板中生成，二进制内嵌认证密钥，无需手动配置 token�?/p>
+  <p class="en">frpc clients are generated via the frps Web panel. The binary embeds the auth key �?no manual token needed.</p>
   <ol>
-    <li lang="zh">登录 frps Web 面板 → 用户管理 → 新增用户</li>
-    <li lang="en">Login frps Web Panel → User Management → Add User</li>
-    <li lang="zh">选择用户 → 生成客户端 → 下载对应架构 frpc</li>
-    <li lang="en">Select User → Generate Client → Download frpc for target arch</li>
-    <li lang="zh">上传至目标设备，执行 <code>./acfrpc_xxx install</code></li>
-    <li lang="en">Upload to target device, run <code>./acfrpc_xxx install</code></li>
+    <li class="zh">登录 frps Web 面板 �?用户管理 �?新增用户</li>
+    <li class="en">Login frps Web Panel �?User Management �?Add User</li>
+    <li class="zh">选择用户 �?生成客户�?�?下载对应架构 frpc</li>
+    <li class="en">Select User �?Generate Client �?Download frpc for target arch</li>
+    <li class="zh">上传至目标设备，执行 <code>./acfrpc_xxx install</code></li>
+    <li class="en">Upload to target device, run <code>./acfrpc_xxx install</code></li>
   </ol>
 </section>
 
-<!-- ═══════════════ 11. WEB PANEL ═══════════════ -->
+<!-- ══════════════�?11. WEB PANEL ══════════════�?-->
 <section id="web-panel">
-  <h2>11. <span lang="zh">Web 管理面板</span><span lang="en">Web Management Panel</span></h2>
-  <p lang="zh">安装完成后访问 <code>http://{服务器IP}:7500</code>。</p>
-  <p lang="en">After installation, visit <code>http://{server-ip}:7500</code>.</p>
+  <h2>11. <span class="zh">Web 管理面板</span><span class="en">Web Management Panel</span></h2>
+  <p class="zh">安装完成后访�?<code>http://{服务器IP}:7500</code>�?/p>
+  <p class="en">After installation, visit <code>http://{server-ip}:7500</code>.</p>
   <table>
-    <tr><th lang="zh">模块</th><th lang="en">Module</th><th lang="zh">说明</th><th lang="en">Description</th></tr>
-    <tr><td lang="zh">监控仪表盘</td><td lang="en">Monitor Dashboard</td><td lang="zh">实时流量、连接数、CPU/内存</td><td lang="en">Real-time traffic, connections, CPU/memory</td></tr>
-    <tr><td lang="zh">智能优化</td><td lang="en">Optimization</td><td lang="zh">5 级传输场景 (1GB~100GB)</td><td lang="en">5-tier transfer profiles (1GB~100GB)</td></tr>
-    <tr><td lang="zh">带宽管理</td><td lang="en">Bandwidth</td><td lang="zh">全局/客户端限速、配额</td><td lang="en">Global/client rate limiting, quotas</td></tr>
-    <tr><td lang="zh">防火墙</td><td lang="en">Firewall</td><td lang="zh">IP 黑白名单</td><td lang="en">IP blacklist/whitelist</td></tr>
-    <tr><td lang="zh">在线升级</td><td lang="en">Upgrade</td><td lang="zh">URL + 文件上传升级</td><td lang="en">URL + file upload upgrade</td></tr>
-    <tr><td lang="zh">用户管理</td><td lang="en">Users</td><td lang="zh">授权 + 客户端生成</td><td lang="en">Auth + client generation</td></tr>
-    <tr><td lang="zh">诊断工具</td><td lang="en">Diagnostics</td><td lang="zh">端口检测、性能分析</td><td lang="en">Port check, performance</td></tr>
+    <tr><th class="zh">模块</th><th class="en">Module</th><th class="zh">说明</th><th class="en">Description</th></tr>
+    <tr><td class="zh">监控仪表�?/td><td class="en">Monitor Dashboard</td><td class="zh">实时流量、连接数、CPU/内存</td><td class="en">Real-time traffic, connections, CPU/memory</td></tr>
+    <tr><td class="zh">智能优化</td><td class="en">Optimization</td><td class="zh">5 级传输场�?(1GB~100GB)</td><td class="en">5-tier transfer profiles (1GB~100GB)</td></tr>
+    <tr><td class="zh">带宽管理</td><td class="en">Bandwidth</td><td class="zh">全局/客户端限速、配�?/td><td class="en">Global/client rate limiting, quotas</td></tr>
+    <tr><td class="zh">防火�?/td><td class="en">Firewall</td><td class="zh">IP 黑白名单</td><td class="en">IP blacklist/whitelist</td></tr>
+    <tr><td class="zh">在线升级</td><td class="en">Upgrade</td><td class="zh">URL + 文件上传升级</td><td class="en">URL + file upload upgrade</td></tr>
+    <tr><td class="zh">用户管理</td><td class="en">Users</td><td class="zh">授权 + 客户端生�?/td><td class="en">Auth + client generation</td></tr>
+    <tr><td class="zh">诊断工具</td><td class="en">Diagnostics</td><td class="zh">端口检测、性能分析</td><td class="en">Port check, performance</td></tr>
   </table>
 </section>
 
-<!-- ═══════════════ 12. API ═══════════════ -->
+<!-- ══════════════�?12. API ══════════════�?-->
 <section id="api">
-  <h2>12. <span lang="zh">API 参考</span><span lang="en">API Reference</span></h2>
+  <h2>12. <span class="zh">API 参�?/span><span class="en">API Reference</span></h2>
   <table>
-    <tr><th>Endpoint</th><th>Method</th><th lang="zh">说明</th><th lang="en">Description</th></tr>
-    <tr><td><code>/api/optimize/profile</code></td><td>GET</td><td lang="zh">系统信息 + 优化推荐</td><td lang="en">System info + optimization</td></tr>
-    <tr><td><code>/api/optimize/apply</code></td><td>POST</td><td lang="zh">应用优化</td><td lang="en">Apply optimization</td></tr>
-    <tr><td><code>/api/optimize/rollback</code></td><td>POST</td><td lang="zh">回滚优化</td><td lang="en">Rollback optimization</td></tr>
-    <tr><td><code>/api/bandwidth/global</code></td><td>GET/POST</td><td lang="zh">全局带宽限制</td><td lang="en">Global bandwidth limit</td></tr>
-    <tr><td><code>/api/bandwidth/stats</code></td><td>GET</td><td lang="zh">带宽统计</td><td lang="en">Bandwidth statistics</td></tr>
-    <tr><td><code>/api/bandwidth/client</code></td><td>GET/POST</td><td lang="zh">客户端带宽限制</td><td lang="en">Client bandwidth limit</td></tr>
-    <tr><td><code>/api/firewall/mode</code></td><td>GET/POST</td><td lang="zh">防火墙模式</td><td lang="en">Firewall mode</td></tr>
-    <tr><td><code>/api/firewall/rules</code></td><td>GET/POST</td><td lang="zh">防火墙规则</td><td lang="en">Firewall rules</td></tr>
-    <tr><td><code>/api/diagnostic/run</code></td><td>POST</td><td lang="zh">运行诊断</td><td lang="en">Run diagnostics</td></tr>
-    <tr><td><code>/api/diagnostic/report</code></td><td>GET</td><td lang="zh">诊断报告</td><td lang="en">Diagnostic report</td></tr>
-    <tr><td><code>/api/restart</code></td><td>POST</td><td lang="zh">重启服务</td><td lang="en">Restart service</td></tr>
+    <tr><th>Endpoint</th><th>Method</th><th class="zh">说明</th><th class="en">Description</th></tr>
+    <tr><td><code>/api/optimize/profile</code></td><td>GET</td><td class="zh">系统信息 + 优化推荐</td><td class="en">System info + optimization</td></tr>
+    <tr><td><code>/api/optimize/apply</code></td><td>POST</td><td class="zh">应用优化</td><td class="en">Apply optimization</td></tr>
+    <tr><td><code>/api/optimize/rollback</code></td><td>POST</td><td class="zh">回滚优化</td><td class="en">Rollback optimization</td></tr>
+    <tr><td><code>/api/bandwidth/global</code></td><td>GET/POST</td><td class="zh">全局带宽限制</td><td class="en">Global bandwidth limit</td></tr>
+    <tr><td><code>/api/bandwidth/stats</code></td><td>GET</td><td class="zh">带宽统计</td><td class="en">Bandwidth statistics</td></tr>
+    <tr><td><code>/api/bandwidth/client</code></td><td>GET/POST</td><td class="zh">客户端带宽限�?/td><td class="en">Client bandwidth limit</td></tr>
+    <tr><td><code>/api/firewall/mode</code></td><td>GET/POST</td><td class="zh">防火墙模�?/td><td class="en">Firewall mode</td></tr>
+    <tr><td><code>/api/firewall/rules</code></td><td>GET/POST</td><td class="zh">防火墙规�?/td><td class="en">Firewall rules</td></tr>
+    <tr><td><code>/api/diagnostic/run</code></td><td>POST</td><td class="zh">运行诊断</td><td class="en">Run diagnostics</td></tr>
+    <tr><td><code>/api/diagnostic/report</code></td><td>GET</td><td class="zh">诊断报告</td><td class="en">Diagnostic report</td></tr>
+    <tr><td><code>/api/restart</code></td><td>POST</td><td class="zh">重启服务</td><td class="en">Restart service</td></tr>
   </table>
 </section>
 
-<!-- ═══════════════ 13. FAQ ═══════════════ -->
+<!-- ══════════════�?13. FAQ ══════════════�?-->
 <section id="faq">
-  <h2>13. <span lang="zh">常见问题</span><span lang="en">FAQ</span></h2>
+  <h2>13. <span class="zh">常见问题</span><span class="en">FAQ</span></h2>
 
-  <h4 lang="zh">Q: 如何确认设备架构？</h4><h4 lang="en">Q: How to check device architecture?</h4>
+  <h4 class="zh">Q: 如何确认设备架构�?/h4><h4 class="en">Q: How to check device architecture?</h4>
   <pre><code>uname -m
-# x86_64  → amd64
-# aarch64 → arm64
-# armv7l  → armhf
-# mips    → mips/mipsle</code></pre>
+# x86_64  �?amd64
+# aarch64 �?arm64
+# armv7l  �?armhf
+# mips    �?mips/mipsle</code></pre>
 
-  <h4 lang="zh">Q: 面板端口无法访问？</h4><h4 lang="en">Q: Panel port not accessible?</h4>
+  <h4 class="zh">Q: 面板端口无法访问�?/h4><h4 class="en">Q: Panel port not accessible?</h4>
   <pre><code># Linux (ufw)
 sudo ufw allow 7500
 # Linux (firewalld)
 sudo firewall-cmd --add-port=7500/tcp --permanent && sudo firewall-cmd --reload</code></pre>
 
-  <h4 lang="zh">Q: 如何升级？</h4><h4 lang="en">Q: How to upgrade?</h4>
-  <p lang="zh">Web 面板 → 在线升级（推荐），或重新下载最新二进制覆盖安装。</p>
-  <p lang="en">Web Panel → Online Upgrade (recommended), or re-download the latest binary.</p>
+  <h4 class="zh">Q: 如何升级�?/h4><h4 class="en">Q: How to upgrade?</h4>
+  <p class="zh">Web 面板 �?在线升级（推荐），或重新下载最新二进制覆盖安装�?/p>
+  <p class="en">Web Panel �?Online Upgrade (recommended), or re-download the latest binary.</p>
 
-  <h4 lang="zh">Q: Docker 如何查看日志？</h4><h4 lang="en">Q: How to view Docker logs?</h4>
+  <h4 class="zh">Q: Docker 如何查看日志�?/h4><h4 class="en">Q: How to view Docker logs?</h4>
   <pre><code>docker logs -f frps-panel</code></pre>
 </section>
 
 <!-- FOOTER -->
 <div style="text-align:center;padding:40px 0;border-top:2px solid var(--border);margin-top:40px;color:var(--text-secondary);font-size:0.9em;">
-  <p>frps-panel v0.69.1_attychen &nbsp;|&nbsp; <span lang="zh">基于</span><span lang="en">Based on</span> <a href="https://github.com/fatedier/frp">fatedier/frp</a> &amp; <a href="https://github.com/xxl6097/go-frp-panel">go-frp-panel</a></p>
+  <p>frps-panel v0.69.1_attychen &nbsp;|&nbsp; <span class="zh">基于</span><span class="en">Based on</span> <a href="https://github.com/fatedier/frp">fatedier/frp</a> &amp; <a href="https://github.com/xxl6097/go-frp-panel">go-frp-panel</a></p>
   <p>MIT License &nbsp;|&nbsp; WeChat: attychen &nbsp;|&nbsp; <a href="https://github.com/attychen/immich-frps">GitHub</a></p>
 </div>
 
@@ -387,7 +387,7 @@ sudo firewall-cmd --add-port=7500/tcp --permanent && sudo firewall-cmd --reload<
 function switchLang(lang) {
   document.body.className = 'show-' + lang;
   document.querySelectorAll('.lang-btn').forEach(function(b) {
-    b.classList.toggle('active', b.textContent.trim().startsWith(lang === 'zh' ? '中' : 'E'));
+    b.classList.toggle('active', b.textContent.trim().startsWith(lang === 'zh' ? '�? : 'E'));
   });
   localStorage.setItem('frps-doc-lang', lang);
 }
