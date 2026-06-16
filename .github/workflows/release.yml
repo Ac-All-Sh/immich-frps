@@ -131,8 +131,8 @@ jobs:
           platforms: ${{ matrix.platform }}
           push: true
           tags: |
-            acallsh/frps:${{ needs.check-version.outputs.version }}-${{ matrix.arch }}
-            acallsh/frps:latest-${{ matrix.arch }}
+            attychen/frps:${{ needs.check-version.outputs.version }}-${{ matrix.arch }}
+            attychen/frps:latest-${{ matrix.arch }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -144,8 +144,8 @@ jobs:
           platforms: ${{ matrix.platform }}
           push: true
           tags: |
-            acallsh/frpc:${{ needs.check-version.outputs.version }}-${{ matrix.arch }}
-            acallsh/frpc:latest-${{ matrix.arch }}
+            attychen/frpc:${{ needs.check-version.outputs.version }}-${{ matrix.arch }}
+            attychen/frpc:latest-${{ matrix.arch }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -189,12 +189,12 @@ jobs:
             
             ```bash
             # Docker Hub
-            docker pull acallsh/frps:${{ needs.check-version.outputs.version }}-amd64
-            docker pull acallsh/frpc:${{ needs.check-version.outputs.version }}-amd64
-            docker pull acallsh/frps:${{ needs.check-version.outputs.version }}-arm64
-            docker pull acallsh/frpc:${{ needs.check-version.outputs.version }}-arm64
-            docker pull acallsh/frps:${{ needs.check-version.outputs.version }}-arm
-            docker pull acallsh/frpc:${{ needs.check-version.outputs.version }}-arm
+            docker pull attychen/frps:${{ needs.check-version.outputs.version }}-amd64
+            docker pull attychen/frpc:${{ needs.check-version.outputs.version }}-amd64
+            docker pull attychen/frps:${{ needs.check-version.outputs.version }}-arm64
+            docker pull attychen/frpc:${{ needs.check-version.outputs.version }}-arm64
+            docker pull attychen/frps:${{ needs.check-version.outputs.version }}-arm
+            docker pull attychen/frpc:${{ needs.check-version.outputs.version }}-arm
             ```
             
             ### Quick Start
@@ -211,7 +211,7 @@ jobs:
             
             ### Author
             
-            **Ac.All.Sh** - [GitHub](https://github.com/Ac-All-Sh)
+            **[attychen](https://github.com/attychen)** • Original by [Ac.All.Sh](https://github.com/Ac-All-Sh)
           files: |
             artifacts/binaries-amd64/*
             artifacts/binaries-arm64/*
