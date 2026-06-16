@@ -1,0 +1,343 @@
+package comm
+
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"sync"
+	"time"
+
+	"github.com/xxl6097/glog/pkg/z"
+	"github.com/xxl6097/glog/pkg/zutil"
+	"github.com/xxl6097/go-frp-panel/pkg"
+	iface2 "github.com/xxl6097/go-frp-panel/pkg/comm/iface"
+	"github.com/xxl6097/go-frp-panel/pkg/comm/ws"
+	"github.com/xxl6097/go-frp-panel/pkg/model"
+	utils2 "github.com/xxl6097/go-frp-panel/pkg/utils"
+	"github.com/xxl6097/go-service/pkg/github"
+	"github.com/xxl6097/go-service/pkg/gs/igs"
+	"github.com/xxl6097/go-service/pkg/utils"
+	"github.com/xxl6097/go-service/pkg/utils/util"
+	"go.uber.org/zap"
+)
+
+type commapi struct {
+	igs  igs.Service
+	pool *sync.Pool // use sync.Pool caching buf to reduce gc ratio
+}
+
+func (this *commapi) ApiCMD(w http.ResponseWriter, r *http.Request) {
+	res, f := Response(r)
+	defer f(w)
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		z.L().Warn("body读取失败", zap.Error(err))
+		res.Err(err)
+		return
+	}
+	if body == nil {
+		msg := "body is nil"
+		z.L().Warn("body错误", zap.Error(err))
+		res.Err(fmt.Errorf(msg))
+		return
+	}
+	var msg iface2.Message[any]
+	err = json.Unmarshal(body, &msg)
+	if err != nil {
+		z.L().Warn("解析Json对象失败", zap.Error(err))
+		res.Err(err)
+		return
+	}
+	switch msg.Action {
+	case ws.CLIENT_NETWORLD:
+		arr, e := utils2.GetNetworkInterfaces()
+		if e != nil {
+			res.Err(e)
+		} else {
+			res.Any(arr)
+		}
+		break
+	case ws.CMD:
+		data, ok := msg.Data.(map[string]interface{})
+		if ok {
+			z.L().Info("数据", zap.Any("data", data))
+			d := data["data"]
+			if d == nil {
+				z.L().Warn("data is nil", zap.Any("data", msg.Data))
+				break
+			}
+			v, okk := d.(string)
+			if !okk {
+				z.L().Warn("string err", zap.Any("d", d))
+				break
+			}
+			arrData := strings.Split(v, " ")
+			var cmd *exec.Cmd
+			if len(arrData) >= 2 {
+				cmd = exec.Command(arrData[0], arrData[1:]...)
+			} else {
+				cmd = exec.Command(arrData[0])
+			}
+			output, err := cmd.CombinedOutput()
+			if err != nil {
+				res.Err(err)
+				return
+			}
+			res.Any(string(output))
+		} else {
+			res.Err(fmt.Errorf("cmd err %+v", msg.Data))
+		}
+		break
+	}
+}
+
+func NewCommApi(install igs.Service) *commapi {
+	return &commapi{
+		igs: install,
+		pool: &sync.Pool{
+			New: func() interface{} { return make([]byte, 32*1024) },
+		},
+	}
+}
+
+func (this *commapi) GetBuffer() *sync.Pool {
+	return this.pool
+}
+
+func (this *commapi) ApiFiles(w http.ResponseWriter, r *http.Request) {
+	res, f := Response(r)
+	defer f(w)
+	params, err := utils2.GetDataByJson[struct {
+		Path string `json:"path"`
+	}](r)
+	if err != nil {
+		res.Error(fmt.Errorf("read param err: %v", err).Error())
+		z.L().Warn("err", zap.Any("msg", res.Msg))
+		return
+	}
+	if params == nil {
+		res.Error("params is empty")
+		z.L().Warn("err", zap.Any("msg", res.Msg))
+		return
+	}
+	path := params.Path
+	isFile := strings.HasSuffix(path, "/")
+
+	if !isFile {
+		w.Header().Set("File-Type", "text")
+		http.ServeFile(w, r, path) //r.URL.Path
+	} else {
+		dirs, err := os.ReadDir(path)
+		if err != nil {
+			return
+		}
+
+		var files []model.TreeData
+		for _, dir := range dirs {
+			f := model.TreeData{
+				Id:    dir.Name(),
+				Label: dir.Name(),
+			}
+			if dir.IsDir() {
+				f.Label = dir.Name() + "/"
+			}
+			files = append(files, f)
+		}
+		res.Any(files)
+	}
+
+}
+
+func (this *commapi) ApiUpdate1(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	select {
+	case <-time.After(20 * time.Second):
+		fmt.Println("Operation completed")
+		w.Write([]byte("Operation completed"))
+	case <-ctx.Done():
+		// 客户端断开或超时
+		//if ctx.Err() == context.Canceled {
+		//}
+		fmt.Println("Client disconnected", ctx.Err())
+	}
+}
+
+func (this *commapi) ApiUpdate(w http.ResponseWriter, r *http.Request) {
+	res, f := Response(r)
+	defer f(w)
+	ctx := r.Context()
+	//ctx, cancel := context.WithCancel(context.Background())
+	//defer cancel()
+	updir := zutil.AppHome()
+	_, _, free, _ := util.GetDiskUsage(updir)
+	if free < utils2.GetSelfSize()*2 {
+		if err := utils.ClearTemp(); err != nil {
+			fmt.Println("/tmp清空失败:", err)
+		} else {
+			fmt.Println("/tmp清空完成")
+		}
+	}
+
+	var newFilePath string
+	switch r.Method {
+	case "PUT", "put":
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			res.Response(400, fmt.Sprintf("read request body error: %v", err))
+			z.L().Warn("put", zap.Any("msg", res.Msg))
+			return
+		}
+		if len(body) == 0 {
+			res.Response(400, "升级URL空的哦～")
+			z.L().Warn("put", zap.Any("msg", res.Msg))
+			return
+		}
+		binUrl := string(body)
+		z.L().Debug("使用URL升级", zap.String("binUrl", binUrl))
+		newUrl := utils.DownloadFileWithCancelByUrls(github.Api().GetProxyUrls(binUrl))
+		newFilePath = newUrl
+		break
+	case "POST", "post":
+		// 获取上传的文件
+		file, handler, err := r.FormFile("file")
+		if err != nil {
+			res.Error("body no file")
+			return
+		}
+		defer file.Close()
+		dstFilePath := filepath.Join(zutil.AppHome("temp", "upgrade"), handler.Filename)
+		//dstFilePath 名称为上传文件的原始名称
+		dst, err := os.Create(dstFilePath)
+		if err != nil {
+			res.Error(fmt.Sprintf("create file %s error: %v", handler.Filename, err))
+			return
+		}
+		buf := this.pool.Get().([]byte)
+		defer this.pool.Put(buf)
+		_, err = io.CopyBuffer(dst, file, buf)
+		dst.Close()
+		if err != nil {
+			res.Error(err.Error())
+			return
+		}
+		newFilePath = dstFilePath
+		break
+	default:
+		res.Error("位置请求方法")
+	}
+	if newFilePath != "" {
+		z.L().Debug("开始升级", zap.String("path", newFilePath))
+		err := this.igs.Upgrade(ctx, newFilePath)
+		z.L().Warn("----升级", zap.Error(err))
+		if err == nil {
+			res.Ok("升级成功～")
+		} else {
+			res.Error(fmt.Sprintf("更新失败～%v", err))
+		}
+
+	}
+}
+
+func (this *commapi) ApiRestart(w http.ResponseWriter, r *http.Request) {
+	res, f := Response(r)
+	defer f(w)
+	res.Msg = "restart sucess"
+	if res.Code == 0 && this.igs != nil {
+		go func() {
+			time.Sleep(time.Second)
+			var err error
+			err = this.igs.Restart()
+			//if utils.IsOpenWRT() {
+			//	err = this.igs.RunCmd("restart")
+			//} else {
+			//	err = this.igs.Restart()
+			//}
+			if err != nil {
+				z.Error("重启失败")
+			}
+			z.Error("重启ok")
+		}()
+	}
+}
+
+func (this *commapi) ApiCheckVersion(w http.ResponseWriter, r *http.Request) {
+	res, f := Response(r)
+	defer f(w)
+	data, err := github.Api().CheckUpgrade(pkg.BinName)
+	if err != nil {
+		res.Err(err)
+	} else {
+		z.Debug("version:", data)
+		res.Any(data)
+	}
+	//args, err := utils2.CheckVersionFromGithub()
+	//if err != nil {
+	//	res.Err(err)
+	//	return
+	//}
+	//if args != nil && len(args) > 0 {
+	//	res.response(1, args[1], args[0])
+	//} else {
+	//	res.Ok("已经是最新版本～")
+	//}
+}
+
+// /api/shutdown
+func (this *commapi) ApiClear(w http.ResponseWriter, r *http.Request) {
+	res, f := Response(r)
+	defer f(w)
+	z.Infof("Http request: [%s]", r.URL.Path)
+	binPath, err := os.Executable()
+	if err != nil {
+		res.Error(fmt.Sprintf("获取当前可执行文件路径出错: %v\n", err))
+		z.Error(res.Msg)
+		return
+	}
+	binDir := filepath.Dir(binPath)
+	clientsDir := filepath.Join(binDir, "clients")
+	err = utils.DeleteAllDirector(clientsDir)
+	if this.igs != nil {
+		err = this.igs.ClearTemp()
+	}
+	if err != nil {
+		res.Err(err)
+	} else {
+		res.Msg = "删除成功"
+	}
+}
+func (this *commapi) ApiUninstall(w http.ResponseWriter, r *http.Request) {
+	res, f := Response(r)
+	defer f(w)
+	res.Msg = "uninstall sucess"
+	if res.Code == 0 && this.igs != nil {
+		go func() {
+			time.Sleep(time.Second)
+			var err error
+			//if utils.IsOpenWRT() {
+			//	err = this.igs.RunCmd("uninstall")
+			//} else {
+			//	err = this.igs.Uninstall()
+			//}
+			//err = this.igs.RunCmd("uninstall")
+			err = this.igs.UnInstall()
+			if err != nil {
+				z.Error("uninstall 失败", err)
+			} else {
+				z.Error("uninstall ok")
+			}
+		}()
+	}
+}
+func (this *commapi) ApiVersion(w http.ResponseWriter, r *http.Request) {
+	res, f := Response(r)
+	defer f(w)
+	res.Sucess("获取成功", utils2.GetVersion())
+	//z.Println("操作系统:", runtime.GOOS)     // 如 "linux", "windows"
+	//z.Println("CPU 架构:", runtime.GOARCH) // 如 "amd64", "arm64"
+	//z.Println("CPU 核心数:", runtime.NumCPU())
+}
